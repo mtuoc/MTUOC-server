@@ -1,0 +1,40 @@
+startMTEngine: True
+startCommand: "./marian-server-GPU -m model.bin -v vocab-es.yml vocab-en.yml -p 8261 --n-best --alignment hard --normalize 1 --quiet &"
+IP: localhost
+port: 8261
+min_len_factor: 0.5
+
+###Preprocessing
+replace_NUMs: False
+code_NUMs: "@NUM@"
+split_NUMs: False
+
+replace_URLs: True
+code_URLs: "@URL@"
+replace_EMAILs: True
+code_EMAILs: "@EMAIL@"
+
+#Tokenization
+tokenize_SL: False
+sl_tokenizer: MTUOC_tokenizer_spa.py
+#one of the MTUOC-tokenizers or state Moses if you use Moses tokenizers
+tl_tokenizer: MTUOC_tokenizer_eng.py
+#one of the MTUOC-tokenizers or state Moses if you use Moses tokenizers
+  
+#Truecasing
+tcmodel: tc.es
+#or None if not used
+truecase: upper
+#one of None, all, upper
+
+###SentencePiece###
+sentencepiece: True
+sp_model_SL: spmodel.model
+sp_model_TL: spmodel.model
+sp_splitter: "▁"
+bos_annotate: True
+bos_symbol: <s>
+#None or <s> (or other)
+eos_annotate: True
+eos_symbol: </s>
+

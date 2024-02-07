@@ -1,0 +1,79 @@
+MTEngine:
+  MTengine: Marian
+  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà
+    
+Segment:
+  SRX_file: segment.srx
+  SRXlang: English
+
+checkistranslatable: True
+
+change_input_files: None
+change_output_files: None
+change_translation_files: None
+
+remove_tags: False
+restore_tags: True
+#only for Marian
+tagrestorer: None
+
+detect_language: True
+fasttext_model: lid.176.bin
+fasttext_min_confidence: 0.75
+
+sl_lang: es
+
+MTUOCServer:
+  port: 8011
+  type: MTUOC
+  #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
+  verbosity_level: 3
+  log_file: log.log
+  
+GoogleTranslate:
+  sllang: en
+  tllang: es
+  glossary: None
+  #state None if no glossary is used, otherwise the name of the glossary
+  project_id: prova-traduccio-automatica
+  location: us-central1
+  jsonfile: XXX.json
+  
+DeepL:
+  API_key: XXXxxx-XXX-XXXX
+  sllang: EN
+  tllang: ES
+  #tag_handling: html
+  #one of html, xml
+  formality: default
+  #one of default, less, more
+  split_sentences: "off"
+  #one of "off", "on", "nonewlines"
+  glossary: None
+  
+Lucy:
+  url: http://XX.XXX.XXX.XX:8080/AutoTranslateRS/V1.3/mtrans/exec/
+  TRANSLATION_DIRECTION: SPANISH-CATALAN
+  MARK_UNKNOWNS: 0
+  MARK_ALTERNATIVES: 0
+  MARK_COMPOUNDS: 0
+  CHARSET: UTF
+
+OpusMT:
+  model: Helsinki-NLP/opus-mt-en-ca
+  multilingual: False
+  target_language: cat
+  beam_size: 5
+  num_hypotheses: 5
+  
+NLLB:
+  model: facebook/nllb-200-distilled-1.3B
+  beam_size: 5
+  num_hypotheses: 5
+  src_lang: eng_Latn
+  tgt_lang: cat_Latn
+  
+Softcatala:
+  model_dir: softcatala-eng-cat
+  beam_size: 5
+  num_hypotheses: 5

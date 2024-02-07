@@ -1,7 +1,6 @@
-#    MTUOC-server v 6
+#    MTUOC-server v 2402
 #    Description: an MTUOC server using Sentence Piece as preprocessing step
 #    Copyright (C) 2024  Antoni Oliver
-#    v. 23/01/2023
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -364,6 +363,7 @@ if config.MTUOCServer_MTengine=="GoogleTranslate":
     config.client = translateGoogle.TranslationServiceClient()
     config.client = translateGoogle.TranslationServiceClient()
     config.parent = "projects/"+config.Google_project_id+"/locations/"+config.Google_location
+    printLOG(1,"Translating with Google Translate","")
     
 if config.MTUOCServer_MTengine=="DeepL":
     config.DeepL_API_key=configYAML["DeepL"]["API_key"]
@@ -378,6 +378,7 @@ if config.MTUOCServer_MTengine=="DeepL":
     config.DeepL_glossary=configYAML["DeepL"]["glossary"]
     if config.DeepL_glossary=="None": config.DeepL_glossary=None
     config.DeepLtranslator = deepl.Translator(config.DeepL_API_key)
+    printLOG(1,"Translating with DeepL","")
 
 if config.MTUOCServer_MTengine=="OpusMT":
     config.OpusMT_model=configYAML["OpusMT"]["model"]
@@ -393,7 +394,7 @@ if config.MTUOCServer_MTengine=="OpusMT":
     config.OpusMT_translator.set_target_language(config.OpusMT_target_language)
     config.OpusMT_translator.set_beam_size(config.OpusMT_beam_size)
     config.OpusMT_translator.set_num_hypotheses(config.OpusMT_num_hypotheses)
-    print("Translating with OpusMT using model",config.OpusMT_model)
+    printLOG(1,"Translating with OpusMT using model",config.OpusMT_model)
 
 if config.MTUOCServer_MTengine=="NLLB":
     config.NLLB_model=configYAML["NLLB"]["model"]
@@ -405,7 +406,7 @@ if config.MTUOCServer_MTengine=="NLLB":
     config.NLLB_translator.set_model(config.NLLB_model,config.NLLB_src_lang,config.NLLB_tgt_lang)
     config.NLLB_translator.set_beam_size(config.NLLB_beam_size)
     config.NLLB_translator.set_num_hypotheses(config.NLLB_num_hypotheses)
-    print("Translating with NLLB models",config.NLLB_model)
+    printLOG(1,"Translating with NLLB models",config.NLLB_model)
 
 if config.MTUOCServer_MTengine=="Softcatalà":
     config.softcatala_model_dir=configYAML["Softcatala"]["model_dir"]
@@ -425,6 +426,7 @@ if config.MTUOCServer_MTengine=="Lucy":
     config.Lucy_MARK_ALTERNATIVES=configYAML["Lucy"]["MARK_ALTERNATIVES"]
     config.Lucy_MARK_COMPOUNDS=configYAML["Lucy"]["MARK_COMPOUNDS"]
     config.Lucy_CHARSET=configYAML["Lucy"]["CHARSET"]
+    printLOG(1,"Translating with Lucy","")
 
 
 
@@ -438,12 +440,6 @@ if config.startMTEngineV and not config.MTUOCServer_MTengine in ["GoogleTranslat
 if config.MTUOCServer_MTengine=="Marian":
     connect_to_Marian()
 
-'''    
-if config.MTUOCServer_MTengine=="Marian":
-    connect_to_Marian()
-elif config.MTUOCServer_MTengine=="Moses":
-    config.proxyMoses=connect_to_Moses()
-'''
 if config.MTUOCServer_type=="MTUOC":
     from MTUOC_typeMTUOC import start_MTUOC_server
     start_MTUOC_server()
