@@ -239,6 +239,7 @@ def restore_tags_translation_candidates(translation_candidates):
 
     
 def translate_segment(segment):
+    toupperfinal=False
     printLOG(3,"translate_segment",segment)
     config.segmentORIG=segment
     config.segmentNOTAGS=config.tagrestorer.remove_tags(config.segmentORIG)
@@ -404,7 +405,10 @@ def translate_segment(segment):
         config.translationPOST=postprocess_translation(config.translationPRE)
         printLOG(3,"Translation POST",config.translationPOST)
         config.translation=config.translationPOST
-
+        if not config.translation['tgt'][0]==config.translation['tgt'][0].upper() and config.segmentNOTAGS[0]==config.segmentNOTAGS[0].upper():
+            toupperfinal=True        
+        if toupperfinal:
+            config.translation['tgt']=config.translation['tgt'][0].upper()+config.translation['tgt'][1:]
         if config.hastags and config.restore_tags:
             printLOG(3,"Restoring tags","")
             SOURCENOTAGSTOK=config.translation['src_tokens']
@@ -421,6 +425,8 @@ def translate_segment(segment):
                 config.translation['tgt']=config.tokenizerTL.detokenize(config.translation['tgt'])
         config.translation['tgt']=config.leading_spaces*" "+config.translation['tgt']+config.trailing_spaces*" "
         config.translation['tgt']=config.STARTINGTAG+config.translation['tgt']+config.CLOSINGTAG
+        
+            
         for t in config.TAGSEQUIL:
             try:
                 config.translation['tgt']=config.translation['tgt'].replace(t,config.TAGSEQUIL[t],1)
@@ -428,6 +434,7 @@ def translate_segment(segment):
                 pass
         config.translation['tgt']=config.tagrestorer.repairSpacesTags(config.segmentORIG,config.translation['tgt']) 
         if config.segmentNOTAGS==config.segmentNOTAGS.upper() and config.truecase in ["upper","all"]:
+            toupperfinal=True
             toreplace={}
             for t in config.originaltags:
                 toreplace[t.upper()]=t
@@ -436,6 +443,8 @@ def translate_segment(segment):
                 config.translation['tgt']=config.translation['tgt'].replace(t,toreplace[t],1)
         #Now for all the alternate_translations
         for i in range(0,len(config.translation["alternate_translations"])):
+            if toupperfinal:
+                config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'][0].upper()+config.translation["alternate_translations"][i]['tgt'][1:]
             try:
                 if config.hastags and config.restore_tags:
                     SOURCENOTAGSTOK=config.translation['src_tokens']
@@ -463,6 +472,7 @@ def translate_segment(segment):
                         config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'].replace(t,toreplace[t],1)
             except:
                 print("Error MTUOC_translate alternate translations",sys.exc_info())
+        printLOG(3,"Translation:",config.translation)
         return(config.translation)    
 
     
