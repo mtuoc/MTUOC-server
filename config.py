@@ -122,13 +122,6 @@ MTUOCServer_splitNUMs=False
 escape_html_input=False
 unescape_html_input=True
 
-
-
-
-
-
-
-
 translation_selection_strategy="First"
 
 Google_sllang=""

@@ -132,7 +132,7 @@ config.tagrestorer=TagRestorer()
 config.detect_language=configYAML["detect_language"]
 config.fasttext_model=configYAML["fasttext_model"]
 if config.fasttext_model=="None": config.fasttext_model=None
-config.fasttext_min_confidence=configYAML["fasttext_min_confidence"]
+#config.fasttext_min_confidence=configYAML["fasttext_min_confidence"]
 config.sl_lang=configYAML["sl_lang"]
 if config.detect_language and not config.fasttext_model==None:
     import fasttext

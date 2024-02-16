@@ -1,6 +1,5 @@
-#    MTUOC_stop_server
-#    Copyright (C) 2023  Antoni Oliver
-#    v. 07/06/2023
+#    MTUOC_stop_server v. 24.02
+#    Copyright (C) 2024  Antoni Oliver
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -23,31 +22,23 @@ try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
-import argparse
 
-#YAML
 
-parser = argparse.ArgumentParser(description='MTUOC-server. With no arguments the config-server.yaml file will be used.')
-parser.add_argument('-c','--config', action="store", dest="config", help='The tokenizer to be used.',required=False)
-parser.add_argument('-p','--port', action="store", dest="port", type=int, help='The MTUOC server port.',required=False)
-
-args = parser.parse_args()
-if args.config:
-    configfile=args.config
-else:
-    configfile="config-server.yaml"
-
+configfile="config-server.yaml"
 stream = open(configfile, 'r',encoding="utf-8")
 config=yaml.load(stream, Loader=yaml.FullLoader)
 
-MTEnginePort=config["MTEngine"]["port"]
 MTUOCServer_port=config["MTUOCServer"]["port"]
 
-if args.port:
-    MTUOCServer_port=args.port
+configfile="config-Marian.yaml"
+stream = open(configfile, 'r',encoding="utf-8")
+configMarian=yaml.load(stream, Loader=yaml.FullLoader)
+
+MTEnginePort=configMarian["port"]
 
 try:
     stopcommand2="fuser -k "+str(MTEnginePort)+"/tcp"
+    print(stopcommand2)
     os.system(stopcommand2)
     print("MT Engine stopped.")
 except:
@@ -55,6 +46,7 @@ except:
     
 try:
     stopcommand2="fuser -k "+str(MTUOCServer_port)+"/tcp"
+    print(stopcommand2)
     os.system(stopcommand2)
     print("MTUOC server stopped.")
 except:

@@ -1,5 +1,4 @@
-#    MTUOC_preprocess v 2402
-#    Description: an MTUOC server using Sentence Piece as preprocessing step
+#    MTUOC_preprocess v. 24.02
 #    Copyright (C) 2024  Antoni Oliver
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -22,6 +21,8 @@ import regex as rx
 import re
 import html
 import sys
+import string as stringmodule
+
 
     
 def remove_control_characters(cadena):
@@ -45,6 +46,42 @@ def splitnumbers(segment,joiner=""):
         xifra2=joiner.join(xifra)
         segment=segment.replace(xifra,xifra2)
     return(segment)
+
+def findEMAILs(string):
+    try:
+        email=re.findall('\S+@\S+', string)
+        email2=[]
+        for em in email: 
+            if em[-1] in stringmodule.punctuation: em=em[0:-1]
+            email2.append(em)
+    except:
+        print("ERROR:",sys.exc_info())
+    return email2
+    
+def findURLs(string): 
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex,string)       
+    return [x[0] for x in url] 
+
+def restore_EMAILs(stringA,stringB,code="@EMAIL@"):
+    EMAILs=findEMAILs(stringA)
+    for email in EMAILs:
+        stringB=stringB.replace(code,email,1)
+    return(stringB)
+    
+def restore_URLs(stringA,stringB,code="@URL@"):
+    URLs=findURLs(stringA)
+    for url in URLs:
+        stringB=stringB.replace(code,url,1)
+    return(stringB)
+    
+def restore_NUMs(segmentSL,segmentTL,code="@NUM@"):
+    trobatsEXPRNUM=re.finditer(re_num,segmentSL)
+    position=0
+    for trobat in trobatsEXPRNUM:
+        if not trobat.group(0) in [".",","]:
+            segmentTL=segmentTL.replace(code,trobat.group(0),1)
+    return(segmentTL)
 
 def preprocess_segment(segment):
     if config.escape_html_input:
@@ -102,6 +139,10 @@ def postprocess_segment(segmentPre):
         segmentPost=segmentPost.upper()
     elif config.truecase in ["upper","all"]:
         segmentPost=config.truecaser.truecase(segmentPost)
+    if config.replace_EMAILs:
+        segmentPost=restore_EMAILs(config.segmentORIG,segmentPost,code=config.code_EMAILs)
+    if config.replace_URLs:
+        segmentPost=restore_URLs(config.segmentORIG,segmentPost,code=config.code_URLs)
     segmentPost=detokenizationTL(segmentPost)
     return(segmentPost)
 
