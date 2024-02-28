@@ -137,12 +137,14 @@ def postprocess_segment(segmentPre):
             printLOG(1,"ERROR preprocess segment:",sys.exc_info())
     if config.isupper and config.truecase in ["upper","all"]:
         segmentPost=segmentPost.upper()
-    elif config.truecase in ["all"]:
+    elif config.truecase in ["upper","all"]:
         segmentPost=config.truecaser.truecase(segmentPost)
-    if config.replace_EMAILs:
-        segmentPost=restore_EMAILs(config.segmentORIG,segmentPost,code=config.code_EMAILs)
-    if config.replace_URLs:
-        segmentPost=restore_URLs(config.segmentORIG,segmentPost,code=config.code_URLs)
+    #if config.replace_EMAILs:
+    #    segmentPost=restore_EMAILs(config.segmentORIG,segmentPost,code=config.code_EMAILs)
+    #    print("****************RESTORE EMAILS",segmentPost)
+    #if config.replace_URLs:
+    #    segmentPost=restore_URLs(config.segmentORIG,segmentPost,code=config.code_URLs)
+    #    print("****************RESTORE URLS",segmentPost)
     segmentPost=detokenizationTL(segmentPost)
     return(segmentPost)
 

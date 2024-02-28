@@ -12,6 +12,7 @@ checkistranslatable=False
 
 remove_tags: False
 tagrestorer=None
+missing_tags: "ignore"
 hastags=False
 segmentORIG=""
 segmentORIGMOD=""

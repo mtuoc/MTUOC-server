@@ -39,6 +39,9 @@ from MTUOC_Moses import translate_segment_Moses
 from MTUOC_preprocess import preprocess_segment
 from MTUOC_preprocess import postprocess_segment
 from MTUOC_preprocess import postprocess_translation
+#from MTUOC_preprocess import restore_EMAILs
+#from MTUOC_preprocess import restore_URLs
+#from MTUOC_preprocess import restore_NUMs
 
 from MTUOC_preprocess import tokenizationSL
 from MTUOC_preprocess import tokenizationTL
@@ -74,11 +77,18 @@ def upper_case_first_letter(segment):
     
 ###URLs EMAILs
 
+def remove_tags(segment):
+        segmentnotags=re.sub('(<[^>]+>)', "",segment)
+        segmentnotags=re.sub('({[0-9]+})', "",segmentnotags)
+        segmentnotags=" ".join(segmentnotags.split())
+        return(segmentnotags)
+
 def findEMAILs(string):
     email=re.findall('\S+@\S+', string)
     email2=[]
     for em in email: 
         if em[-1] in stringmodule.punctuation: em=em[0:-1]
+        em=remove_tags(em)
         email2.append(em)
     return email2
     
@@ -125,7 +135,8 @@ def desplitnumbers(segment,equil):
     for xifra2 in equil:
         segment=segment.replace(xifra2,equil[xifra2])
     return(segment)
-   
+
+
 def restore_EMAILs(stringA,stringB,code="@EMAIL@"):
     EMAILs=findEMAILs(stringA)
     for email in EMAILs:
@@ -145,7 +156,6 @@ def restore_NUMs(segmentSL,segmentTL,code="@NUM@"):
         if not trobat.group(0) in [".",","]:
             segmentTL=segmentTL.replace(code,trobat.group(0),1)
     return(segmentTL)
- 
 
 def translate_para(paragraph):
     if config.segment_input:
@@ -191,56 +201,60 @@ def translate_para(paragraph):
 
         translation=translate_segment(paragraph)
     return(translation)
-        
-def restore_tags_translation_candidates(translation_candidates):
-    hastags=config.tagrestorer.has_tags(translation_candidates["segmentTAGS"])
-    if hastags:
-        
-        (translation_candidates["segmentTAGS"],equil)=config.tagrestorer.replace_tags(translation_candidates["segmentOrig"])
-        printLOG(3,"replace_tags",translation_candidates["segmentTAGS"])
-        printLOG(3,"equil",equil)
-        (translation_candidates["segmentTAGS"],tagInici,tagFinal)=config.tagrestorer.remove_start_end_tag(translation_candidates["segmentOrig"])
-        printLOG(3,"remove_start_end_tag",translation_candidates["segmentTAGS"])
-        printLOG(3,"TAG initial:",tagInici)
-        printLOG(3,"TAG final:",tagFinal)
-        translation_candidates["segmentNOTAGS"]=config.tagrestorer.remove_tags(translation_candidates["segmentTAGS"])
-        originaltags=config.tagrestorer.get_tags(translation_candidates["segmentTAGS"])
-        segmentNOTAGSTOK=tokenizationSL(translation_candidates["segmentNOTAGS"])
-        segmentTAGSTOK=tokenizationSL(translation_candidates["segmentPreTAGS"])
-        translation_candidates["translationTAGS"]=[None] * len(translation_candidates["translationNOTAGSPre"])
-        for i in range(0,len(translation_candidates["translationNOTAGSPre"])):
-            try:
-                if hastags and config.tag_restoration:
-                    try:
-                        alignment=translation_candidates["alignments"][i]
-                        translationNOTAGSTOK=tokenizationTL(translation_candidates["translationNOTAGSPre"][i])
-                        translation_candidates["translationTAGS"][i]=config.tagrestorer.restore_tags(segmentNOTAGSTOK, segmentTAGSTOK, alignment, translationNOTAGSTOK)
 
-                    except:
-                        printLOG(3,"ERROR restoring tags:",sys.exc_info())
-                        translation_candidates["translationTAGS"][i]=translationNOTAGSTOK
+
+def change_output(translation):
+    if not config.change_output_files[0]=="None":
+        printLOG(3,"CHANGES OUTPUT:")
+        printLOG(3,"ORIGINAL:",translation['tgt'])
+        for change in config.changes_output:
+            tofind=change[0]
+            tochange=change[1]
+            regexp="\\b"+tofind+"\\b"
+            trobat=re.findall(regexp,translation['tgt'])
+            if trobat: 
+                translation['tgt']=re.sub(regexp, tochange, translation['tgt'])
+                printLOG(3,tofind,tochange)
+            for i in range(0,len(translation["alternate_translations"])):
+                trobat=re.findall(regexp,translation["alternate_translations"][i]['tgt'])
+                if trobat: 
+                    translation["alternate_translations"][i]['tgt']=re.sub(regexp, tochange, translation["alternate_translations"][i]['tgt'])
                 
-                else:
-                    translation_candidates["translationTAGS"]=translation_candidates["translationNOTAGSPre"]
-                    printLOG(3,"translationTAGS:",translation_candidates["translationTAGS"][i])
-                    
-                    
-                
+        printLOG(3,"CHANGED:",translation['tgt'])
+    return(translation)
+    
+
+def change_translation(translation):
+    if not config.change_translation_files[0]=="None":
+        printLOG(3,"CHANGES TRANSLATION:")
+        printLOG(3,"ORIGINAL SOURCE:",translation['src'])
+        printLOG(3,"ORIGINAL TARGET:",translation['tgt'])
+        for change in config.changes_translation:
+            try:
+                tofindSOURCE=change[0]
+                tofindTARGET=change[1]
+                tochange=change[2]
+                regexpSOURCE="\\b"+tofindSOURCE+"\\b"
+                regexpTARGET="\\b"+tofindTARGET+"\\b"
+                trobatSOURCE=re.findall(regexpSOURCE,translation['src'])
+                trobatTARGET=re.findall(regexpTARGET,translation['tgt'])
+                if trobatSOURCE and trobatTARGET: 
+                    translation['tgt']=re.sub(regexpTARGET, tochange, translation['tgt'])
+                    trobat=re.findall(regexp,translation["alternate_translations"][i]['tgt'])
+                    printLOG(3,tofindTARGET,tochange)
+                for i in range(0,len(translation["alternate_translations"])):
+                    trobatSOURCE=re.findall(regexpSOURCE,translation['src'])
+                    trobatTARGET=re.findall(regexpTARGET,translation['src'])
+                    if trobatSOURCE and trobatTARGET: 
+                        translation=re.sub(regexpTARGET, tochange, translation['src'])
+                        printLOG(3,tofindTARGET,tochange)           
             except:
                 pass
-    else:
-        translation_candidates["segmentNOTAGS"]=translation_candidates["segmentTAGS"]
-        translation_candidates["translationTAGS"]=translation_candidates["translationNOTAGSPre"]
-
-    
-    
-    
-    return(translation_candidates)
-
+        printLOG(3,"CHANGED TARGET:",translation['tgt'])
+    return(translation)
     
 def translate_segment(segment):
     toupperfinal=False
-    printLOG(3,"translate_segment",segment)
     config.segmentORIG=segment
     config.segmentNOTAGS=config.tagrestorer.remove_tags(config.segmentORIG)
     printLOG(3,"segmentORIG",config.segmentORIG)
@@ -249,13 +263,34 @@ def translate_segment(segment):
     config.originaltags=config.tagrestorer.get_tags(segment)
     printLOG(3,"HAS TAGS",config.hastags)
     printLOG(3,"TAGS",config.originaltags)
+    if not config.change_input_files[0]=="None":
+        printLOG(3,"CHANGES INPUT:")
+        printLOG(3,"ORIGINAL:",config.segmentORIG)
+        for change in config.changes_input:
+            tofind=change[0]
+            tochange=change[1]
+            regexp="\\b"+tofind+"\\b"
+            trobat=re.findall(regexp,config.segmentORIG)
+            if trobat:    
+                config.segmentORIG=re.sub(regexp, tochange, config.segmentORIG)
+                printLOG(3,tofind,tochange)
+        printLOG(3,"CHANGED:",config.segmentORIG)
     if config.MTUOCServer_MTengine=="Marian":
-        (config.segmentTAGSMOD,config.TAGSEQUIL)=config.tagrestorer.replace_tags(segment)
-        printLOG(3,"segmentTAGSMOD",config.segmentTAGSMOD)
-        (config.segmentNOTIF,config.STARTINGTAG,config.CLOSINGTAG)=config.tagrestorer.remove_start_end_tag(config.segmentTAGSMOD)
-        printLOG(3,"segmentNOTIF",config.segmentNOTIF)
-        printLOG(3,"STARTINGTAG",config.STARTINGTAG)
-        printLOG(3,"CLOSINGTAG",config.CLOSINGTAG)
+        if config.hastags:
+            (config.segmentTAGSMOD,config.TAGSEQUIL)=config.tagrestorer.replace_tags(config.segmentORIG)
+            (config.segmentNOTIF,config.STARTINGTAG,config.CLOSINGTAG)=config.tagrestorer.remove_start_end_tag(config.segmentTAGSMOD)
+            printLOG(3,"segmentNOTIF",config.segmentNOTIF)
+            printLOG(3,"STARTINGTAG",config.STARTINGTAG)
+            printLOG(3,"CLOSINGTAG",config.CLOSINGTAG)
+        else:
+            config.segmentTAGSMOD=config.segmentORIG
+            config.TAGSEQUIL={}
+            config.segmentNOTIF=config.segmentORIG
+            config.STARTINGTAG=""
+            config.CLOSINGTAG=""
+        
+            
+        
     else:
         if config.remove_tags:
             config.segmentTAGSMOD=config.segmentNOTAGS
@@ -285,14 +320,14 @@ def translate_segment(segment):
         except:
             printLOG(3,"ERROR cheking if is translatable:",sys.exc_info())
     if config.detect_language and not config.fasttext_model==None:
-        printLOG(3,"Detecting languaege:","")
+        printLOG(3,"Detecting language:","")
         try:
             DL1=config.modelFT.predict(config.segmentNOTAGS.replace("\n",""), k=1)
             L1=DL1[0][0].replace("__label__","")
             confL1=DL1[1][0]
             printLOG(1,"Detected language:",L1)
             printLOG(1,"Language detection confidence:",confL1)
-            if not L1==config.sl_lang and confL1>=config.fasttext_min_confidence:
+            if not L1==config.sl_lang:#_lang and confL1>=config.fasttext_min_confidence:
                 response={}
                 response["src"]=segment
                 response["src_tokens"]="None"
@@ -379,10 +414,9 @@ def translate_segment(segment):
         return(translation)
         
     if config.MTUOCServer_MTengine=="Marian":
-    
+        
         if config.remove_tags:
             config.segmentTOTRANSLATE=config.segmentNOTAGS
-
         if config.replace_EMAILs:
             config.segmentTOTRANSLATE=replace_EMAILs(config.segmentTOTRANSLATE,config.code_EMAILs)
             printLOG(3,"Replacing EMAILs:",config.segmentTOTRANSLATE)
@@ -398,6 +432,7 @@ def translate_segment(segment):
         if config.split_NUMs:
             config.segmentTOTRANSLATE=split_NUMs(config.segmentTOTRANSLATE,config.code_NUMs)
             printLOG(3,"Splitting NUMs:",config.segmentTOTRANSLATE)
+
         printLOG(3,"Preprocessing segment: ",config.segmentTOTRANSLATE)
         config.segmentTOTRANSLATE=preprocess_segment(config.segmentTOTRANSLATE)
         config.translationPRE=translate_segment_Marian(config.segmentTOTRANSLATE)
@@ -405,6 +440,7 @@ def translate_segment(segment):
         config.translationPOST=postprocess_translation(config.translationPRE)
         printLOG(3,"Translation POST",config.translationPOST)
         config.translation=config.translationPOST
+        config.translation['src']=config.segmentORIG
         if not config.translation['tgt'][0]==config.translation['tgt'][0].upper() and config.segmentNOTAGS[0]==config.segmentNOTAGS[0].upper():
             toupperfinal=True        
         if toupperfinal:
@@ -412,7 +448,9 @@ def translate_segment(segment):
         if config.hastags and config.restore_tags:
             printLOG(3,"Restoring tags","")
             SOURCENOTAGSTOK=config.translation['src_tokens']
-            SOURCETAGSTOK=preprocess_segment(config.tagrestorer.addspacetags(config.segmentNOTIF))
+            segmentNOTIFMOD=replace_EMAILs(config.segmentNOTIF)
+            segmentNOTIFMOD=replace_URLs(segmentNOTIFMOD)
+            SOURCETAGSTOK=preprocess_segment(config.tagrestorer.addspacetags(segmentNOTIFMOD))
             SELECTEDALIGNMENT=config.translation['alignments']
             TARGETNOTAGSTOK=config.translation['tgt_tokens']
             printLOG(3,"SOURCENOTAGSTOK",SOURCENOTAGSTOK)
@@ -425,14 +463,18 @@ def translate_segment(segment):
                 config.translation['tgt']=config.tokenizerTL.detokenize(config.translation['tgt'])
         config.translation['tgt']=config.leading_spaces*" "+config.translation['tgt']+config.trailing_spaces*" "
         config.translation['tgt']=config.STARTINGTAG+config.translation['tgt']+config.CLOSINGTAG
+        if config.hastags:
+            for t in config.TAGSEQUIL:
+                try:
+                    config.translation['tgt']=config.translation['tgt'].replace(t,config.TAGSEQUIL[t],1)
+                except:
+                    pass
+            config.translation['tgt']=config.tagrestorer.repairSpacesTags(config.segmentORIG,config.translation['tgt']) 
+        if config.replace_EMAILs:
+            config.translation['tgt']=restore_EMAILs(config.segmentORIG,config.translation['tgt'],code=config.code_EMAILs)
         
-            
-        for t in config.TAGSEQUIL:
-            try:
-                config.translation['tgt']=config.translation['tgt'].replace(t,config.TAGSEQUIL[t],1)
-            except:
-                pass
-        config.translation['tgt']=config.tagrestorer.repairSpacesTags(config.segmentORIG,config.translation['tgt']) 
+        if config.replace_URLs:
+            config.translation['tgt']=restore_URLs(config.segmentORIG,config.translation['tgt'],code=config.code_URLs)
         if config.segmentNOTAGS==config.segmentNOTAGS.upper() and config.truecase in ["upper","all"]:
             toupperfinal=True
             toreplace={}
@@ -441,10 +483,36 @@ def translate_segment(segment):
             config.translation['tgt']=config.translation['tgt'].upper()
             for t in toreplace:
                 config.translation['tgt']=config.translation['tgt'].replace(t,toreplace[t],1)
-        #Now for all the alternate_translations
+        ###CHECKING FINAL TAGS
+        finaltags=config.tagrestorer.get_tags(config.translation['tgt'])
+        checktags=config.originaltags
+        controlcheck=True
+        for tag in finaltags:
+            try:
+                checktags.remove(tag)
+            except:
+                controlcheck=False
+                pass
+        if len(checktags)>0 and controlcheck:
+            print("ERROR RETRIEVING TAGS. ACTION:",config.missing_tags)
+            if config.missing_tags=="ignore":
+                pass
+            elif config.missing_tags=="add_beginning":
+                for tag in checktags:
+                    config.translation['tgt']=tag+config.translation['tgt']
+            elif config.missing_tags=="add_end":
+                for tag in checktags:
+                    config.translation['tgt']=config.translation['tgt']+tag
+            elif config.missing_tags=="delete_all":
+                config.translation['tgt']=config.tagrestorer.remove_tags(config.translation['tgt'])
+        #Now for all the alternate_translations        
         for i in range(0,len(config.translation["alternate_translations"])):
             if toupperfinal:
-                config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'][0].upper()+config.translation["alternate_translations"][i]['tgt'][1:]
+                try:
+                    config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'][0].upper()+config.translation["alternate_translations"][i]['tgt'][1:]
+                except:
+                    pass
+            
             try:
                 if config.hastags and config.restore_tags:
                     SOURCENOTAGSTOK=config.translation['src_tokens']
@@ -463,6 +531,10 @@ def translate_segment(segment):
                     except:
                         pass
                 config.translation["alternate_translations"][i]['tgt']=config.tagrestorer.repairSpacesTags(config.segmentORIG,config.translation["alternate_translations"][i]['tgt']) 
+                if config.replace_EMAILs:
+                    config.translation["alternate_translations"][i]['tgt']=restore_EMAILs(config.segmentORIG,config.translation["alternate_translations"][i]['tgt'],code=config.code_EMAILs)
+                if config.replace_URLs:
+                    config.translation["alternate_translations"][i]['tgt']=restore_URLs(config.segmentORIG,config.translation["alternate_translations"][i]['tgt'],code=config.code_URLs)
                 if config.segmentNOTAGS==config.segmentNOTAGS.upper() and config.truecase in ["upper","all"]:
                     toreplace={}
                     for t in config.originaltags:
@@ -470,8 +542,36 @@ def translate_segment(segment):
                     config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'].upper()
                     for t in toreplace:
                         config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt'].replace(t,toreplace[t],1)
+                        
+                ####CHECKING TAGS
+                ###CHECKING FINAL TAGS
+                finaltags=config.tagrestorer.get_tags(config.translation["alternate_translations"][i]['tgt'])
+                checktags=config.originaltags
+                controlcheck=True
+                for tag in finaltags:
+                    try:
+                        checktags.remove(tag)
+                    except:
+                        controlcheck=False
+                        pass
+                if len(checktags)>0 and controlcheck:
+                    print("ERROR RETRIEVING TAGS. ACTION:",config.missing_tags)
+                    if config.missing_tags=="ignore":
+                        pass
+                    elif config.missing_tags=="add_beginning":
+                        for tag in checktags:
+                            config.translation["alternate_translations"][i]['tgt']=tag+config.translation["alternate_translations"][i]['tgt']
+                    elif config.missing_tags=="add_end":
+                        for tag in checktags:
+                            config.translation["alternate_translations"][i]['tgt']=config.translation["alternate_translations"][i]['tgt']+tag
+                    elif config.missing_tags=="delete_all":
+                        config.translation["alternate_translations"][i]['tgt']=config.tagrestorer.remove_tags(config.translation["alternate_translations"][i]['tgt'])
+                
             except:
                 print("Error MTUOC_translate alternate translations",sys.exc_info())
+            
+        config.translation=change_output(config.translation)    
+        config.translation=change_translation(config.translation)    
         printLOG(3,"Translation:",config.translation)
         return(config.translation)    
 

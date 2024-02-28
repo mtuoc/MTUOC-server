@@ -98,6 +98,7 @@ config.MTUOCServer_port=configYAML["MTUOCServer"]["port"]
 config.change_input_files=configYAML["change_input_files"].split(";")
 config.changes_input=[]
 if not config.change_input_files[0]=="None":
+    import csv
     for ci in config.change_input_files:
         with open(ci) as csvfile:
             csvreader = csv.reader(csvfile, delimiter=';', quotechar='"')
@@ -107,6 +108,7 @@ if not config.change_input_files[0]=="None":
 config.change_output_files=configYAML["change_output_files"].split(";")
 config.changes_output=[]
 if not config.change_output_files[0]=="None":
+    import csv
     for co in config.change_output_files:
         with open(co) as csvfile:
             csvreader = csv.reader(csvfile, delimiter=';', quotechar='"')
@@ -121,12 +123,16 @@ if not config.change_translation_files[0]=="None":
             csvreader = csv.reader(csvfile, delimiter=';', quotechar='"')
             for row in csvreader:
                 config.changes_translation.append(row)
+                
 
 config.checkistranslatable=configYAML["checkistranslatable"]
 
 config.remove_tags=configYAML["remove_tags"]
 config.restore_tags=configYAML["restore_tags"]
 config.tagrestorer=TagRestorer()
+
+config.missing_tags=configYAML["missing_tags"]
+if not config.missing_tags in ["ignore","add_beginning","add_end","delete_all"]: config.missing_tags
     
 
 config.detect_language=configYAML["detect_language"]

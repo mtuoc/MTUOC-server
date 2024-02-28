@@ -180,6 +180,7 @@ class TagRestorer():
                 endtag=endtag.group()
             except:
                 endtag=""
+            
             if starttag:
                 todelete=False
                 alltagsmod=alltags
@@ -193,6 +194,7 @@ class TagRestorer():
                     todelete=True
                 if self.is_closing_tag(starttag):
                     todelete=True
+                
                 if todelete:
                     segment=lreplace(starttag,"",segment)
                     starttags.append(starttag)
@@ -205,6 +207,8 @@ class TagRestorer():
                     todelete=True
                 if self.is_closing_tag(endtag) and not self.create_starting_tag(endtag) in alltagsmod:
                     todelete=True
+                if self.is_opening_tag(endtag):
+                    todelete=True
                 if todelete:
                     segment=rreplace(endtag,"",segment)
                     trobat=True
@@ -215,6 +219,7 @@ class TagRestorer():
         return(segment,"".join(starttags),"".join(endtags))
         
     def repairSpacesTags(self,slsegment,tlsegment,delimiters=[" ",".",",",":",";","?","!"]):
+        tlsegmentR=tlsegment
         sltags=self.get_tags(slsegment)
         tltags=self.get_tags(tlsegment)
         commontags= list((Counter(sltags) & Counter(tltags)).elements())
@@ -231,22 +236,26 @@ class TagRestorer():
                 try:
                     chafSL=slsegment[slsegment.index(tag)+len(tag)]
                 except:
-                    pass
+                    chafSL=""
                 try:
                     chafTL=tlsegment[tlsegment.index(tag)+len(tag)]
                 except:
-                    pass
+                    chafTL=""
                 if chafSL in delimiters and not chafTL in delimiters:
                     tagmod=tagmod+" "
                 if not chafSL in delimiters and chafTL in delimiters:
                     tagaux=tagaux+" "
-                tlsegment=tlsegment.replace(tagaux,tagmod,1)
-                tlsegment=tlsegment.replace("  "+tag," "+tag,1)
-                tlsegment=tlsegment.replace(tag+"  ",tag+" ",1)
+                try:
+                    tlsegment=tlsegment.replace(tagaux,tagmod,1)
+                    tlsegment=tlsegment.replace("  "+tag," "+tag,1)
+                    tlsegment=tlsegment.replace(tag+"  ",tag+" ",1)
+                except:
+                    pass
 
                 
             except:
                 printLOG(3,"ERROR REPAIRING SPACES:".sys.exc_info())
+                tlsegmentR=tlsegment
         return(tlsegment)
         
     def numerate(self,segment):
@@ -405,6 +414,7 @@ class TagRestorer():
             if a1<nmin: nmin=a1
             if a2>mmax: mmax=a2
             if a2<mmin: mmin=a2
+            
         #chek is all alignments exists
         nonexisting=[]
         for i in range(nmin,nmax):
@@ -445,18 +455,25 @@ class TagRestorer():
                 taglist.remove(closetag)
         #finding open tags
         for n in range(0,11):
-            opentag="<tag"+str(n)+">"
-            regexp=opentag+" [^\s]+"
-            trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
-            if len(trobat)>0 and opentag in taglist:
-                posttoken=trobat[0].replace(opentag,"").strip()
-                try:
-                    postnum=int(posttoken.split("▂")[1])
-                except:
-                    postnum=None
-                if not postnum==None and opentag in taglist:
-                    TARGETTAGSTOKNUM=self.insert_opentag(TARGETTAGSTOKNUM, ali[postnum], opentag)
-                    taglist.remove(opentag)
+            try:
+                opentag="<tag"+str(n)+">"
+                regexp=opentag+" [^\s]+"
+                trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
+                if len(trobat)>0 and opentag in taglist:
+                    posttoken=trobat[0].replace(opentag,"").strip()
+                    try:
+                        #postnum=int(posttoken.split("▂")[1])
+                        postnum=int(posttoken.split("▂")[-1])
+                    except:
+                        postnum=None
+                    if not postnum==None and opentag in taglist:
+                        try:
+                            TARGETTAGSTOKNUM=self.insert_opentag(TARGETTAGSTOKNUM, ali[postnum], opentag)
+                        except:
+                            pass
+                        taglist.remove(opentag)
+            except:
+                print("ERROR:",sys.exc_info())
         #finding closing tags
         for n in range(0,11):
             closingtag="</tag"+str(n)+">"
@@ -471,13 +488,12 @@ class TagRestorer():
                 if not prenum==None and closingtag in taglist:
                     TARGETTAGSTOKNUM=self.insert_closingtag(TARGETTAGSTOKNUM, ali[prenum], closingtag)
                     taglist.remove(closingtag)
-                
         #removing numbering        
         TARGETTAGS=[]
         for token in TARGETTAGSTOKNUM:
             TARGETTAGS.append(token.split("▂")[0])
         
-        TARGETTAGS=" ".join(TARGETTAGS)        
+        TARGETTAGS=" ".join(TARGETTAGS)    
         return(TARGETTAGS)
         
     def fix_xml_tags(self,myxml):
