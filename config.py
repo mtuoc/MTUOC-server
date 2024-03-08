@@ -10,6 +10,8 @@ changes_translation=[]
 
 checkistranslatable=False
 
+multilingual=None
+
 remove_tags: False
 tagrestorer=None
 missing_tags: "ignore"
