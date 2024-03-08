@@ -435,6 +435,9 @@ def translate_segment(segment):
 
         printLOG(3,"Preprocessing segment: ",config.segmentTOTRANSLATE)
         config.segmentTOTRANSLATE=preprocess_segment(config.segmentTOTRANSLATE)
+        if not config.multilingual=="None":
+            config.segmentTOTRANSLATE=config.multilingual+" "+config.segmentTOTRANSLATE
+            print("***config.segmentTOTRANSLATE",config.segmentTOTRANSLATE)
         config.translationPRE=translate_segment_Marian(config.segmentTOTRANSLATE)
         printLOG(3,"Translation PRE",config.translationPRE)
         config.translationPOST=postprocess_translation(config.translationPRE)

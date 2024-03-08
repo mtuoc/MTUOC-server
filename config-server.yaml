@@ -8,8 +8,10 @@ Segment:
 
 checkistranslatable: True
 
+multilingual: <2ast>
+
 change_input_files: None
-change_output_files: canviSortida.txt
+change_output_files: None
 change_translation_files: None
 
 remove_tags: True
@@ -19,14 +21,14 @@ missing_tags: add_end
 #one of ignore, add_beginning, add_end, delete_all
 
 
-detect_language: True
+detect_language: False
 fasttext_model: lid.176.bin
 #fasttext_min_confidence: 0.75
 
 sl_lang: es
 
 MTUOCServer:
-  port: 8000
+  port: 8005
   type: MTUOC
   #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
   verbosity_level: 1
