@@ -128,9 +128,6 @@ if not config.change_translation_files[0]=="None":
 
 config.multilingual=configYAML["multilingual"]
 
-print("************config.multilingual",config.multilingual)
-
-
 config.checkistranslatable=configYAML["checkistranslatable"]
 
 config.remove_tags=configYAML["remove_tags"]
