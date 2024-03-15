@@ -4,11 +4,11 @@ MTEngine:
     
 Segment:
   SRX_file: None
-  SRXlang: Spanish
+  SRXlang: English
 
 checkistranslatable: True
 
-multilingual: <2ast>
+multilingual: None
 
 change_input_files: None
 change_output_files: None
@@ -25,10 +25,10 @@ detect_language: False
 fasttext_model: lid.176.bin
 #fasttext_min_confidence: 0.75
 
-sl_lang: es
+sl_lang: en
 
 MTUOCServer:
-  port: 8005
+  port: 8000
   type: MTUOC
   #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
   verbosity_level: 1
