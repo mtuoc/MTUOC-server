@@ -3,15 +3,15 @@ MTEngine:
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà
     
 Segment:
-  SRX_file: None
-  SRXlang: English
+  SRX_file: segment-mod.srx
+  SRXlang: Spanish
 
 checkistranslatable: True
 
 multilingual: None
 
-change_input_files: None
-change_output_files: None
+change_input_files: canviEntrada.txt
+change_output_files: canviSortida.txt
 change_translation_files: None
 
 remove_tags: True
@@ -25,7 +25,7 @@ detect_language: False
 fasttext_model: lid.176.bin
 #fasttext_min_confidence: 0.75
 
-sl_lang: en
+sl_lang: es
 
 MTUOCServer:
   port: 8000
