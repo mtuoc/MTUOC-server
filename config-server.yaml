@@ -1,17 +1,17 @@
 MTEngine:
-  MTengine: Marian
-  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà
+  MTengine: Aina
+  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Aina
     
 Segment:
-  SRX_file: segment-mod.srx
-  SRXlang: Spanish
+  SRX_file: None
+  SRXlang: English
 
 checkistranslatable: True
 
 multilingual: None
 
-change_input_files: canviEntrada.txt
-change_output_files: canviSortida.txt
+change_input_files: None
+change_output_files: None
 change_translation_files: None
 
 remove_tags: True
@@ -25,7 +25,7 @@ detect_language: False
 fasttext_model: lid.176.bin
 #fasttext_min_confidence: 0.75
 
-sl_lang: es
+sl_lang: en
 
 MTUOCServer:
   port: 8000
@@ -79,5 +79,11 @@ NLLB:
   
 Softcatala:
   model_dir: softcatala-eng-cat
+  beam_size: 5
+  num_hypotheses: 5
+  
+Aina:
+  model_dir: projecte-aina/aina-translator-en-ca
+  revision: main
   beam_size: 5
   num_hypotheses: 5

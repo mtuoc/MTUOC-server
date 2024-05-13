@@ -394,13 +394,13 @@ def translate_segment(segment):
             printLOG(3,"Error translating segment with Softcatalà",sys.exc_info())
         return(config.translation)
         
-    if config.MTUOCServer_MTengine=="Softcatalà":
+    if config.MTUOCServer_MTengine=="Aina":
         try:
-            printLOG(3,"Translating with NLLB:",config.segmentTOTRANSLATE)
-            config.translation=config.NLLB_translator.translate(config.segmentTOTRANSLATE)
+            printLOG(3,"Translating with Aina:",config.segmentTOTRANSLATE)
+            config.translation=config.aina_translator.translate(config.segmentTOTRANSLATE)
             printLOG(3,"Translation:",config.translation)
         except:
-            printLOG(3,"Error translating segment with NLLB",sys.exc_info())
+            printLOG(3,"Error translating segment with Aina",sys.exc_info())
         return(config.translation)
         
     if config.MTUOCServer_MTengine=="GoogleTranslate":
