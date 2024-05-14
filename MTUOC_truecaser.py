@@ -134,7 +134,7 @@ class Truecaser():
                 print("ERROR",sys.exc_info())
                 nsegment.append(token)
         if self.tokenizer:
-            nsegment=self.tokenizer.detokenize_s(" ".join(nsegment))     
+            nsegment=self.tokenizer.detokenize_s(" ".join(nsegment))   
         else:
             nsegment=" ".join(nsegment)
         if ucf:

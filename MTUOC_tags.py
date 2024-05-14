@@ -402,7 +402,6 @@ class TagRestorer():
         nmin=100000
         mmax=0
         mmin=100000
-
         for a in SELECTEDALIGNMENT.split():
             (a1,a2)=a.split("-")
             a1=int(a1)
@@ -414,7 +413,6 @@ class TagRestorer():
             if a1<nmin: nmin=a1
             if a2>mmax: mmax=a2
             if a2<mmin: mmin=a2
-            
         #chek is all alignments exists
         nonexisting=[]
         for i in range(nmin,nmax):
@@ -439,20 +437,23 @@ class TagRestorer():
         taglist=self.taglist.copy()
         #finding open-close pairs
         for n in range(0,11):
-            opentag="<tag"+str(n)+">"
-            closetag="</tag"+str(n)+">"
-            regexp=opentag+"(.*?)"+closetag
-            trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
-            if len(trobat)>0 and opentag in taglist and closetag in taglist:
-                (minpos,maxpos)=self.retrieve_indexes(trobat[0])
-                postrad=[]
-                postrad.append(ali[minpos])
-                postrad.append(ali[maxpos])
-                minpostrad=min(postrad)
-                maxpostrad=max(postrad)
-                TARGETTAGSTOKNUM=self.insert_open_close(TARGETTAGSTOKNUM,opentag,closetag,minpostrad,maxpostrad)
-                taglist.remove(opentag)
-                taglist.remove(closetag)
+            try:
+                opentag="<tag"+str(n)+">"
+                closetag="</tag"+str(n)+">"
+                regexp=opentag+"(.*?)"+closetag
+                trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
+                if len(trobat)>0 and opentag in taglist and closetag in taglist:
+                    (minpos,maxpos)=self.retrieve_indexes(trobat[0])
+                    postrad=[]
+                    postrad.append(ali[minpos])
+                    postrad.append(ali[maxpos])
+                    minpostrad=min(postrad)
+                    maxpostrad=max(postrad)
+                    TARGETTAGSTOKNUM=self.insert_open_close(TARGETTAGSTOKNUM,opentag,closetag,minpostrad,maxpostrad)
+                    taglist.remove(opentag)
+                    taglist.remove(closetag)
+            except:
+                pass
         #finding open tags
         for n in range(0,11):
             try:
@@ -473,27 +474,30 @@ class TagRestorer():
                             pass
                         taglist.remove(opentag)
             except:
-                print("ERROR:",sys.exc_info())
+                pass
         #finding closing tags
         for n in range(0,11):
-            closingtag="</tag"+str(n)+">"
-            regexp="[^\s]+ "+closingtag
-            trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
-            if len(trobat)>0 and closingtag in taglist:
-                pretoken=trobat[0].replace(closingtag,"").strip()
-                try:
-                    prenum=int(pretoken.split("▂")[1])
-                except:
-                    prenum=None
-                if not prenum==None and closingtag in taglist:
-                    TARGETTAGSTOKNUM=self.insert_closingtag(TARGETTAGSTOKNUM, ali[prenum], closingtag)
-                    taglist.remove(closingtag)
-        #removing numbering        
+            try:
+                closingtag="</tag"+str(n)+">"
+                regexp="[^\s]+ "+closingtag
+                trobat=re.findall(regexp, SOURCETAGSTOKNUM, re.DOTALL)
+                if len(trobat)>0 and closingtag in taglist:
+                    pretoken=trobat[0].replace(closingtag,"").strip()
+                    try:
+                        prenum=int(pretoken.split("▂")[1])
+                    except:
+                        prenum=None
+                    if not prenum==None and closingtag in taglist:
+                        TARGETTAGSTOKNUM=self.insert_closingtag(TARGETTAGSTOKNUM, ali[prenum], closingtag)
+                        taglist.remove(closingtag)
+            except:
+                pass
+        #removing numbering     
         TARGETTAGS=[]
         for token in TARGETTAGSTOKNUM:
             TARGETTAGS.append(token.split("▂")[0])
         
-        TARGETTAGS=" ".join(TARGETTAGS)    
+        TARGETTAGS=" ".join(TARGETTAGS)   
         return(TARGETTAGS)
         
     def fix_xml_tags(self,myxml):

@@ -146,8 +146,11 @@ def postprocess_segment(segmentPre):
             printLOG(1,"ERROR preprocess segment:",sys.exc_info())
     if config.isupper and config.truecase in ["upper","all"]:
         segmentPost=segmentPost.upper()
-    elif config.truecase in ["upper","all"]:
-        segmentPost=config.truecaser.truecase(segmentPost)
+    #NO NEED TO DETRUECASE
+    #elif config.truecase in ["all"]:
+    #    segmentPost=config.truecaser.truecase(segmentPost)
+    #elif config.truecase in ["upper"]:
+    #    segmentPost=config.truecaser.truecase(segmentPost)
     #if config.replace_EMAILs:
     #    segmentPost=restore_EMAILs(config.segmentORIG,segmentPost,code=config.code_EMAILs)
     #    print("****************RESTORE EMAILS",segmentPost)

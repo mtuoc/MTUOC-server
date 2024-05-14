@@ -394,13 +394,13 @@ def translate_segment(segment):
             printLOG(3,"Error translating segment with Softcatalà",sys.exc_info())
         return(config.translation)
         
-    if config.MTUOCServer_MTengine=="Aina":
+    if config.MTUOCServer_MTengine=="Softcatalà":
         try:
-            printLOG(3,"Translating with Aina:",config.segmentTOTRANSLATE)
-            config.translation=config.aina_translator.translate(config.segmentTOTRANSLATE)
+            printLOG(3,"Translating with NLLB:",config.segmentTOTRANSLATE)
+            config.translation=config.NLLB_translator.translate(config.segmentTOTRANSLATE)
             printLOG(3,"Translation:",config.translation)
         except:
-            printLOG(3,"Error translating segment with Aina",sys.exc_info())
+            printLOG(3,"Error translating segment with NLLB",sys.exc_info())
         return(config.translation)
         
     if config.MTUOCServer_MTengine=="GoogleTranslate":
@@ -446,7 +446,6 @@ def translate_segment(segment):
         config.segmentTOTRANSLATE=preprocess_segment(config.segmentTOTRANSLATE)
         if not config.multilingual=="None":
             config.segmentTOTRANSLATE=config.multilingual+" "+config.segmentTOTRANSLATE
-            print("***config.segmentTOTRANSLATE",config.segmentTOTRANSLATE)
         config.translationPRE=translate_segment_Marian(config.segmentTOTRANSLATE)
         printLOG(3,"Translation PRE",config.translationPRE)
         config.translationPOST=postprocess_translation(config.translationPRE)
@@ -517,7 +516,8 @@ def translate_segment(segment):
                     config.translation['tgt']=config.translation['tgt']+tag
             elif config.missing_tags=="delete_all":
                 config.translation['tgt']=config.tagrestorer.remove_tags(config.translation['tgt'])
-        #Now for all the alternate_translations        
+        #Now for all the alternate_translations      
+          
         for i in range(0,len(config.translation["alternate_translations"])):
             if toupperfinal:
                 try:
