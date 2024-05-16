@@ -8,9 +8,13 @@ changes_input=[]
 changes_output=[]
 changes_translation=[]
 
+alternate_translations=True
+
 checkistranslatable=False
 
 multilingual=None
+
+
 
 remove_tags: False
 tagrestorer=None
@@ -174,9 +178,5 @@ softcatala_translator=None
 softcatala_beam_size=1
 softcatala_num_hypotheses=1
 
-aina_model=None
-aina_revision=None
-aina_translator=None
-aina_beam_size=1
-aina_num_hypotheses=1
+
 

@@ -203,6 +203,7 @@ class TagRestorer():
                     starttag=""
             if endtag:
                 todelete=False
+                alltagsmod=alltags
                 if self.is_closing_tag(endtag) and self.create_starting_tag(endtag)==starttag:
                     todelete=True
                 if self.is_closing_tag(endtag) and not self.create_starting_tag(endtag) in alltagsmod:
@@ -395,6 +396,7 @@ class TagRestorer():
         
     def restore_tags(self,SOURCENOTAGSTOK, SOURCETAGSTOK, SELECTEDALIGNMENT, TARGETNOTAGSTOK):
         SOURCETAGSTOK=SOURCETAGSTOK.replace(" ▁ "," ")
+        
         if TARGETNOTAGSTOK.startswith("<s>") and not SOURCENOTAGSTOK.startswith("<s>"):
             SOURCENOTAGSTOK="<s> "+SOURCENOTAGSTOK
         ali={}

@@ -90,8 +90,6 @@ elif config.MTUOCServer_MTengine=="NLLB":
     from NLLBTranslator import *
 elif config.MTUOCServer_MTengine=="Softcatalà":
     from SoftcatalaTranslator import *
-elif config.MTUOCServer_MTengine=="Aina":
-    from ainaTranslator import *
 
 
 config.MTUOCServer_type=configYAML["MTUOCServer"]["type"]
@@ -131,6 +129,9 @@ if not config.change_translation_files[0]=="None":
 config.multilingual=configYAML["multilingual"]
 
 config.checkistranslatable=configYAML["checkistranslatable"]
+
+config.alternate_translations=configYAML["alternate_translations"]
+
 
 config.remove_tags=configYAML["remove_tags"]
 config.restore_tags=configYAML["restore_tags"]
@@ -425,14 +426,6 @@ if config.MTUOCServer_MTengine=="Softcatalà":
     config.softcatala_translator.set_model_dir(config.softcatala_model_dir)
     config.softcatala_beam_size=configYAML["Softcatala"]["beam_size"]
     config.softcatala_num_hypotheses=configYAML["Softcatala"]["num_hypotheses"]
-    
-if config.MTUOCServer_MTengine=="Aina":
-    config.aina_model=configYAML["Aina"]["model_dir"]
-    config.aina_revision=configYAML["Aina"]["revision"]
-    config.aina_translator=ainaTranslator()
-    config.aina_translator.set_model(config.aina_model,revision=config.aina_revision)
-    config.aina_beam_size=configYAML["Aina"]["beam_size"]
-    config.aina_num_hypotheses=configYAML["Aina"]["num_hypotheses"]
 
 if config.MTUOCServer_MTengine=="Lucy":
     ###Lucy imports

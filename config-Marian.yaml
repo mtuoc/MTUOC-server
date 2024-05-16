@@ -1,5 +1,8 @@
 startMTEngine: True
-startCommand: "./marian-server-CPU -m model.npz -v vocab-en.yml vocab-es.yml -p 8250 --n-best --alignment hard --normalize 1 --quiet &"
+startCommand: "./marian-server-GPU -m model.npz.best-cross-entropy.bin -v vocab-ca.yml vocab-es.yml -p 8250 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &"
+#startCommand: "./marian-server-GPU --models model.iter690000.bin model.iter600000.bin model.iter640000.bin --weights 0.34 0.33 0.33 -v vocab-ca.yml vocab-es.yml -p 8250 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &"
+
+
 IP: localhost
 port: 8250
 min_len_factor: 0.5
@@ -16,13 +19,13 @@ code_EMAILs: "@EMAIL@"
 
 #Tokenization
 tokenize_SL: False
-sl_tokenizer: MTUOC_tokenizer_eng.py
+sl_tokenizer: MTUOC_tokenizer_spa.py
 #one of the MTUOC-tokenizers or state Moses if you use Moses tokenizers
-tl_tokenizer: MTUOC_tokenizer_spa.py
+tl_tokenizer: MTUOC_tokenizer_cat.py
 #one of the MTUOC-tokenizers or state Moses if you use Moses tokenizers
   
 #Truecasing
-tcmodel: tc.en
+tcmodel: tc.ca
 #or None if not used
 truecase: upper
 #one of None, all, upper
