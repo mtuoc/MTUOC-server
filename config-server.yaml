@@ -16,10 +16,19 @@ change_input_files: canviEntrada.txt
 change_output_files: canviSortida.txt
 change_translation_files: None
 
+#changes over input
+remove_control_characters: True
+remove_non_printable: True
+norm_apos: True
+unescape_html: True
+fixencoding: True
+escapeforMoses: False
+
 remove_tags: True
 restore_tags: True
+
 #only for Marian
-missing_tags: add_end
+missing_tags: ignore
 #one of ignore, add_beginning, add_end, delete_all
 
 

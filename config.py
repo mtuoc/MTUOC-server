@@ -1,6 +1,13 @@
 segment_input=False
 SRX_file=None
 
+remove_control_characters=False
+remove_non_printable=False
+norm_apos=False
+unescape_html=False
+fixencoding=False
+escapeforMoses=False
+
 change_input_files=None
 change_output_files=None
 change_translation_files=None

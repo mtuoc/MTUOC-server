@@ -18,7 +18,10 @@ import config
 import sys
 import re
 import string as stringmodule
-
+import regex
+import unicodedata
+import html
+from ftfy import fix_encoding
 
 import srx_segmenter
 
@@ -165,46 +168,87 @@ def restore_NUMs(segmentSL,segmentTL,code="@NUM@"):
         if not trobat.group(0) in [".",","]:
             segmentTL=segmentTL.replace(code,trobat.group(0),1)
     return(segmentTL)
+    
+def remove_control_characters(cadena):
+    return regex.sub(r'\p{C}', '', cadena)
+    
+def is_printable(char):
+    category = unicodedata.category(char)
+    return not (category.startswith('C') or category in ['Zl', 'Zp', 'Cc'])
+    
+def remove_non_printable(string):
+    cleaned_string = ''.join(c for c in string if is_printable(c))
+    return(cleaned_string)
+
+def normalize_apos(segment):
+    segment=segment.replace("’","'")
+    segment=segment.replace("`","'")
+    segment=segment.replace("‘","'")
+    return(segment)
+    
+def unescape_html(segment):
+    segmentUN=html.unescape(segment)
+    return(segmentUN)
+    
+def unescape_html(segment):
+    segmentUN=html.unescape(segment)
+    return(segmentUN)
 
 def translate_para(paragraph):
+    if config.remove_control_characters:
+        paragraph=remove_control_characters(paragraph)
+    if config.remove_non_printable:
+        paragraph=remove_non_printable(paragraph)
+    if config.norm_apos:
+        paragraph=normalize_apos(paragraph)
+    if config.norm_apos:
+        paragraph=unescape_html(paragraph)
+    if config.fixencoding:
+        paragraph=fix_encoding(paragraph)
+    if config.escapeforMoses:
+        paragraph=unescape_html(paragraph)
+        
     if config.segment_input:
-        (segments,separators)=segmenta(paragraph)
-        translations=[]
-        src_tokens=[]
-        tgt_tokens=[]
-        alignments=[]
-        alternate_translations=[]
-        for i in range(0,len(segments)):
-            segment=segments[i]
-            separator=separators[i]
-            translation=translate_segment(segment)
-            alternate_translations.append(translation)
-            translations.append(translation["tgt"])
-            src_tokens.append(translation["src_tokens"])
-            tgt_tokens.append(translation["tgt_tokens"])
-            alignments.append(translation["alignments"])       
-            
-            if config.fix_xml:
-                try:
-                    translation["tgt"]=config.tagrestorer.fix_xml_tags(translation["tgt"])
-                except:
-                    translation["tgt"]=translation["tgt"]
-        translationstr=separators[0]
-        src_token=separators[0]
-        tgt_token=separators[0]
-        alignment=separators[0]
-        for i in range(0,len(segments)):
-            translationstr+=translations[i]+separators[i+1]
-            src_token+=src_tokens[i]+separators[i+1]
-            tgt_token+=tgt_tokens[i]+separators[i+1]
-            alignment+=alignments[i]+separators[i+1]
-            
-        translation={}
-        translation["tgt"]=translationstr
-        translation["src_tokens"]=src_token
-        translation["tgt_tokens"]=tgt_token
-        translation["alignments"]=alignment
-        translation["alternate_translations"]=alternate_translations
+        try:
+            (segments,separators)=segmenta(paragraph)
+            translations=[]
+            src_tokens=[]
+            tgt_tokens=[]
+            alignments=[]
+            alternate_translations=[]
+            for i in range(0,len(segments)):
+                segment=segments[i]
+                separator=separators[i]
+                translation=translate_segment(segment)
+                alternate_translations.append(translation)
+                translations.append(translation["tgt"])
+                src_tokens.append(translation["src_tokens"])
+                tgt_tokens.append(translation["tgt_tokens"])
+                alignments.append(translation["alignments"])       
+                
+                if config.fix_xml:
+                    try:
+                        translation["tgt"]=config.tagrestorer.fix_xml_tags(translation["tgt"])
+                    except:
+                        translation["tgt"]=translation["tgt"]
+            translationstr=separators[0]
+            src_token=separators[0]
+            tgt_token=separators[0]
+            alignment=separators[0]
+            for i in range(0,len(segments)):
+                translationstr+=translations[i]+separators[i+1]
+                src_token+=src_tokens[i]+separators[i+1]
+                tgt_token+=tgt_tokens[i]+separators[i+1]
+                alignment+=alignments[i]+separators[i+1]
+                
+            translation={}
+            translation["tgt"]=translationstr
+            translation["src_tokens"]=src_token
+            translation["tgt_tokens"]=tgt_token
+            translation["alignments"]=alignment
+            translation["alternate_translations"]=alternate_translations
+        except:
+            print("****ERROR:",sys.exc_info())
         
     else:
 

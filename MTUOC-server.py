@@ -21,6 +21,7 @@ import codecs
 import time
 import config
 
+
 from MTUOC_misc import printLOG
 from MTUOC_misc import get_IP_info
 from MTUOC_tags import *
@@ -124,7 +125,11 @@ if not config.change_translation_files[0]=="None":
             for row in csvreader:
                 config.changes_translation.append(row)
                 
-
+config.remove_control_characters=configYAML["remove_control_characters"]
+config.remove_non_printable=configYAML["remove_non_printable"]
+config.norm_apos=configYAML["norm_apos"]
+config.unescape_html=configYAML["unescape_html"]
+config.escapeforMoses=configYAML["escapeforMoses"]
 
 config.multilingual=configYAML["multilingual"]
 
