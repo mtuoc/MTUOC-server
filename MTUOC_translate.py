@@ -36,6 +36,9 @@ if config.MTUOCServer_MTengine=="DeepL":
     from MTUOC_DeepL import DeepL_translate
 if config.MTUOCServer_MTengine=="Lucy":
     from MTUOC_Lucy import Lucy_translate
+if config.MTUOCServer_MTengine=="Apertium":
+    from ApertiumTranslator import ApertiumTranslator
+
 
 from MTUOC_Moses import translate_segment_Moses
 
@@ -438,7 +441,7 @@ def translate_segment(segment):
             printLOG(3,"Error translating segment with Softcatalà",sys.exc_info())
         return(config.translation)
         
-    if config.MTUOCServer_MTengine=="Softcatalà":
+    if config.MTUOCServer_MTengine=="NLLB":
         try:
             printLOG(3,"Translating with NLLB:",config.segmentTOTRANSLATE)
             config.translation=config.NLLB_translator.translate(config.segmentTOTRANSLATE)
@@ -446,6 +449,15 @@ def translate_segment(segment):
         except:
             printLOG(3,"Error translating segment with NLLB",sys.exc_info())
         return(config.translation)
+        
+    if config.MTUOCServer_MTengine=="Apertium":
+        try:
+            printLOG(3,"Translating with Apertium:",config.segmentTOTRANSLATE)
+            config.translation=config.apertium_translator.translate(config.segmentTOTRANSLATE)
+            printLOG(3,"Translation:",config.translation)
+        except:
+            printLOG(3,"Error translating segment with NLLB",sys.exc_info())
+        return(config.translation)    
         
     if config.MTUOCServer_MTengine=="GoogleTranslate":
         printLOG(3,"Translating with GoogleTranslate:",config.segmentTOTRANSLATE)

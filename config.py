@@ -185,5 +185,7 @@ softcatala_translator=None
 softcatala_beam_size=1
 softcatala_num_hypotheses=1
 
-
+apertium_sl=None
+apertium_tl=None
+apertium_translator=None
 

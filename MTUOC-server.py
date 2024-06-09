@@ -445,7 +445,12 @@ if config.MTUOCServer_MTengine=="Lucy":
     config.Lucy_CHARSET=configYAML["Lucy"]["CHARSET"]
     printLOG(1,"Translating with Lucy","")
 
-
+if config.MTUOCServer_MTengine=="Apertium":
+    import apertium
+    from ApertiumTranslator import ApertiumTranslator
+    config.apertium_sl=configYAML["Apertium"]["sl"]
+    config.apertium_tl=configYAML["Apertium"]["tl"]
+    config.apertium_translator=ApertiumTranslator(config.apertium_sl,config.apertium_tl)
 
 #config.MTUOCServer_ONMT_url_root=configYAML["MTUOCServer"]["ONMT_url_root"]
 

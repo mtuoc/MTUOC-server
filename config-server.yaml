@@ -1,9 +1,9 @@
 MTEngine:
   MTengine: Marian
-  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà
+  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium
     
 Segment:
-  SRX_file: segment-mod.srx
+  SRX_file: segment.srx
   SRXlang: Catalan
 
 checkistranslatable: True
@@ -12,8 +12,8 @@ alternate_translations: False
 
 multilingual: None
 
-change_input_files: canviEntrada.txt
-change_output_files: canviSortida.txt
+change_input_files: None
+change_output_files: None
 change_translation_files: None
 
 #changes over input
@@ -92,3 +92,8 @@ Softcatala:
   model_dir: softcatala-eng-cat
   beam_size: 5
   num_hypotheses: 5
+  
+Apertium:
+  sl: spa
+  tl: ita
+  

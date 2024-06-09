@@ -25,7 +25,8 @@ class ApertiumTranslator:
     def translate(self,text):
         self.translation=apertium.translate(self.sl, self.tl, text)
         self.response={}
-        self.response["src"]=text
+        self.response["src_tokens"]=text
+        self.response["tgt_tokens"]=self.translation
         self.response["tgt"]=self.translation
         self.response["alignments"]="None"
         self.response["alternate_translations"]=[]
