@@ -1,5 +1,5 @@
 MTEngine:
-  MTengine: Marian
+  MTengine: Apertium
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium
     
 Segment:
@@ -95,5 +95,5 @@ Softcatala:
   
 Apertium:
   sl: spa
-  tl: ita
+  tl: cat
   
