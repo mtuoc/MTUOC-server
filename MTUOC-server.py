@@ -131,6 +131,9 @@ config.norm_apos=configYAML["norm_apos"]
 config.unescape_html=configYAML["unescape_html"]
 config.escapeforMoses=configYAML["escapeforMoses"]
 
+remove_non_latin_extended_chars=configYAML["remove_non_latin_extended_chars"]
+remove_non_unicode_script_chars=configYAML["remove_non_unicode_script_chars"]
+
 config.multilingual=configYAML["multilingual"]
 
 config.checkistranslatable=configYAML["checkistranslatable"]

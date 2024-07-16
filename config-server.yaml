@@ -24,6 +24,9 @@ unescape_html: True
 fixencoding: True
 escapeforMoses: False
 
+remove_non_latin_extended_chars: False
+remove_non_unicode_script_chars: True
+
 remove_tags: True
 restore_tags: True
 

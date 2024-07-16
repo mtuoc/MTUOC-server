@@ -8,6 +8,9 @@ unescape_html=False
 fixencoding=False
 escapeforMoses=False
 
+remove_non_latin_extended_chars=False
+remove_non_unicode_script_chars=True
+
 change_input_files=None
 change_output_files=None
 change_translation_files=None
