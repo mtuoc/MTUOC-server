@@ -208,6 +208,16 @@ def translate_string(segment, segment_notags):
         except:
             printLOG(2,"Error translating segment with Transformers",sys.exc_info())
             
+    if config.MTUOCServer_MTengine=="NLLB":
+        try:
+            if config.remove_tags:
+                translationSTR=config.NLLB_translator.translate(segment_notags)
+            else:
+                translationSTR=config.NLLB_translator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with NLLB",sys.exc_info())
+        return(translationSTR)
+            
     return(translationSTR)
 
 def translate_segment(segment):

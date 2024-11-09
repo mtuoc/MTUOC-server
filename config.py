@@ -93,6 +93,15 @@ Transformers_model_path=None
 Transformers_beam_size=1
 Transformers_num_hypotheses=1
 
+#NLLB
+NLLB_model=None
+NLLB_beam_size=1
+NLLB_num_hypotheses=1
+NLLB_src_lang=None
+NLLB_tgt_lang=None
+NLLB_translator=None
+
+
 #GetWordAlignments
 GetWordAlignments_type="fast_align"
 wordaligner=None

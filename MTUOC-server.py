@@ -297,6 +297,19 @@ if config.MTUOCServer_MTengine=="Transformers":
     config.TransformersTranslator.set_model(config.Transformers_model_path)
     config.TransformersTranslator.set_beam_size(config.Transformers_beam_size)
     config.TransformersTranslator.set_num_hypotheses(config.Transformers_num_hypotheses)
+    
+elif config.MTUOCServer_MTengine=="NLLB":
+    from NLLBTranslator import *
+    config.NLLB_model=configYAML["NLLB"]["model"]
+    config.NLLB_beam_size=configYAML["NLLB"]["beam_size"]
+    config.NLLB_num_hypotheses=configYAML["NLLB"]["num_hypotheses"]
+    config.NLLB_src_lang=configYAML["NLLB"]["src_lang"]
+    config.NLLB_tgt_lang=configYAML["NLLB"]["tgt_lang"]
+    config.NLLB_translator=NLLBTranslator()
+    config.NLLB_translator.set_model(config.NLLB_model,config.NLLB_src_lang,config.NLLB_tgt_lang)
+    config.NLLB_translator.set_beam_size(config.NLLB_beam_size)
+    config.NLLB_translator.set_num_hypotheses(config.NLLB_num_hypotheses)
+    printLOG(1,"Translating with NLLB models",config.NLLB_model)
 
 if config.MTUOCServer_type=="MTUOC":
     from MTUOC_typeMTUOC import start_MTUOC_server

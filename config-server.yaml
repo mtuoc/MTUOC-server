@@ -1,5 +1,5 @@
 MTEngine:
-  MTengine: OpusMT
+  MTengine: NLLB
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina
   SLcode: en
   TLcode: es
@@ -100,6 +100,13 @@ Aina:
 
 Transformers:
 #use the same configuration for OpusMT
-  model_path: Helsinki-NLP/opus-mt-en-es
+  model_path: Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa
   beam_size: 5
   num_hypotheses: 5
+  
+NLLB:
+  model: facebook/nllb-200-distilled-1.3B
+  beam_size: 5
+  num_hypotheses: 5
+  src_lang: eng_Latn
+  tgt_lang: spa_Latn
