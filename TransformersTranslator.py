@@ -67,6 +67,15 @@ class TransformersTranslator:
         self.response["tgt"]=translated_text#self.alternate_translations[0]["tgt"]
         self.response["alignment"]="None"
         self.response["alternate_translations"]=[]
+        for i in range(0,len(output)):
+            translated_text = self.tokenizer.decode(output[i], skip_special_tokens=True)
+            tgt_subword_units = self.tokenizer.convert_ids_to_tokens(output[i]) 
+            self.alternate_translation={}
+            self.alternate_translation["tgt_tokens"]=" ".join(tgt_subword_units)
+            self.alternate_translation["tgt_subwords"]=" ".join(tgt_subword_units)
+            self.alternate_translation["alignments"]="None"
+            self.alternate_translation["tgt"]=translated_text
+            self.response["alternate_translations"].append(self.alternate_translation)
         '''
         if config.GetWordAlignments_type=="fast_align":
             alignment,src_tokens,tgt_tokens=config.WordAligner.align_sentence_pair(text,translated_text)

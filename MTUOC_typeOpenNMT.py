@@ -52,7 +52,7 @@ def start_OpenNMT_server():
                 out = [[]]
                 ss=inputs0['src']
                 ts=translate_para(ss)
-                response = {"src": ss, "tgt": ts,
+                response = {"src": ss, "tgt": ts['tgt'],
                                 "n_best": 0, "pred_score": 0}
                     
                 out[0].append(response)
@@ -74,5 +74,6 @@ def start_OpenNMT_server():
     printLOG(1, "MTUOC server IP:   ", ip, timestamp=False)
     printLOG(1,"MTUOC server port: ", config.MTUOCServer_port, timestamp=False)
     printLOG(1,"MTUOC server type:","OpenNMT", timestamp=False)
+    ip=get_IP_info()
     
-    start(url_root=url_root, host=ip, port=config.MTUOCServer_port,debug=debug)
+    start(url_root=config.MTUOCServer_ONMT_url_root, host=ip, port=config.MTUOCServer_port,debug=debug)

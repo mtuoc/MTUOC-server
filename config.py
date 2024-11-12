@@ -107,3 +107,6 @@ GetWordAlignments_type="fast_align"
 wordaligner=None
 GetWordAlignments_tokenizerSL=None
 GetWordAlignments_tokenizerTL=None
+
+#type OpenMT
+MTUOCServer_ONMT_url_root=None

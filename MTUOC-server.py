@@ -319,6 +319,7 @@ elif config.MTUOCServer_type=="Moses":
     start_Moses_server()
 elif config.MTUOCServer_type=="OpenNMT":
     from MTUOC_typeOpenNMT import start_OpenNMT_server
+    config.MTUOCServer_ONMT_url_root=configYAML["MTUOCServer"]["ONMT_url_root"]
     start_OpenNMT_server()
 elif config.MTUOCServer_type=="NMTWizard":
     from MTUOC_typeNMTWizard import start_NMTWizard_server

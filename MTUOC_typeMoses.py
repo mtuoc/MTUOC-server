@@ -27,7 +27,7 @@ def translate(segment):
     #function for Moses server
     translation=translate_para(segment['text'])
     translationdict={}
-    translationdict["text"]=translation
+    translationdict["text"]=translation['tgt']
     return(translationdict) 
 
 def start_Moses_server():

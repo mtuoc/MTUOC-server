@@ -48,7 +48,7 @@ def start_NMTWizard_server():
             sourcetext=inputs["src"][0]["text"]
             try:
                 targettext=translate_para(sourcetext)
-                out={"tgt": [[{"text": targettext}]]}
+                out={"tgt": [[{"text": targettext['tgt']}]]}
             except:
                 out['error'] = "Error"
                 out['status'] = STATUS_ERROR
