@@ -27,10 +27,14 @@ class WordAligner:
         build_root = os.path.abspath(fa_dir)
         if platform.system()=="Windows":
             fast_align = os.path.join(build_root, 'fast_align.exe')
+        elif platform.system()=="Darwin":
+            fast_align = os.path.join(build_root, 'fast_alignMAC')
         else:
             fast_align = os.path.join(build_root, 'fast_align')
         if platform.system()=="Windows":
             atools = os.path.join(build_root, 'atools.exe')
+        elif platform.system()=="Windows":
+            atools = os.path.join(build_root, 'atoolsMAC')
         else:
             atools = os.path.join(build_root, 'atools')
 
