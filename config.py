@@ -101,6 +101,12 @@ NLLB_src_lang=None
 NLLB_tgt_lang=None
 NLLB_translator=None
 
+#Softcatalà
+
+softcatala_model_dir=None
+softcatala_translator=None
+softcatala_beam_size=1
+oftcatala_num_hypotheses=1
 
 #GetWordAlignments
 GetWordAlignments_type="fast_align"

@@ -282,7 +282,7 @@ if config.MTUOCServer_MTengine=="Aina":
     config.AinaTranslator.set_model(config.AinaTranslator_model_path,config.AinaTranslator_revision)
     config.AinaTranslator.set_beam_size(config.AinaTranslator_beam_size)
     config.AinaTranslator.set_num_hypotheses(config.AinaTranslator_num_hypotheses)
-    
+    printLOG(1,"Translating with Aina models",config.AinaTranslator_model_path)
     
 if config.MTUOCServer_MTengine=="Transformers":
     from transformers import MarianMTModel, MarianTokenizer
@@ -297,6 +297,7 @@ if config.MTUOCServer_MTengine=="Transformers":
     config.TransformersTranslator.set_model(config.Transformers_model_path)
     config.TransformersTranslator.set_beam_size(config.Transformers_beam_size)
     config.TransformersTranslator.set_num_hypotheses(config.Transformers_num_hypotheses)
+    printLOG(1,"Translating with Transformers models",config.Transformers_model_path)
     
 elif config.MTUOCServer_MTengine=="NLLB":
     from NLLBTranslator import *
@@ -310,6 +311,15 @@ elif config.MTUOCServer_MTengine=="NLLB":
     config.NLLB_translator.set_beam_size(config.NLLB_beam_size)
     config.NLLB_translator.set_num_hypotheses(config.NLLB_num_hypotheses)
     printLOG(1,"Translating with NLLB models",config.NLLB_model)
+    
+elif config.MTUOCServer_MTengine=="Softcatalà" or config.MTUOCServer_MTengine=="Softcatala":
+    from SoftcatalaTranslator import *
+    config.softcatala_model_dir=configYAML["Softcatala"]["model_dir"]
+    config.softcatala_translator=SoftcatalaTranslator()
+    config.softcatala_translator.set_model_dir(config.softcatala_model_dir)
+    config.softcatala_beam_size=configYAML["Softcatala"]["beam_size"]
+    config.softcatala_num_hypotheses=configYAML["Softcatala"]["num_hypotheses"]
+    printLOG(1,"Translating with Softcatalà models",config.softcatala_model_dir)
 
 if config.MTUOCServer_type=="MTUOC":
     from MTUOC_typeMTUOC import start_MTUOC_server

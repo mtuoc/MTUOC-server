@@ -217,6 +217,16 @@ def translate_string(segment, segment_notags):
         except:
             printLOG(2,"Error translating segment with NLLB",sys.exc_info())
         return(translationSTR)
+        
+    if config.MTUOCServer_MTengine=="Softcatalà" or config.MTUOCServer_MTengine=="Softcatala":
+        try:
+            if config.remove_tags:
+                translationSTR=config.softcatala_translator.translate(segment_notags)
+            else:
+                translationSTR=config.softcatala_translator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with Softcatalà",sys.exc_info())
+        return(translationSTR)
             
     return(translationSTR)
 

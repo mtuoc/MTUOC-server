@@ -1,5 +1,5 @@
 MTEngine:
-  MTengine: OpusMT
+  MTengine: Softcatala
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina
   SLcode: en
   TLcode: es
@@ -8,7 +8,7 @@ MTEngine:
 
 MTUOCServer:
   port: 8000
-  type: OpenNMT
+  type: MTUOC
   #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
   verbosity_level: 3
   log_file: log.log
@@ -60,8 +60,8 @@ Preprocess:
   
 
 Postprocess:
-  restore_case: True
-  restore_tags: False
+  restore_case: False
+  restore_tags: True
   numeric_check: True
   change_output_files: None
   change_output_delimiter: ;
@@ -74,17 +74,17 @@ Postprocess:
 GetWordAlignments:
   type: None
   #one of None, fast_align
-  tokenizerSL: MTUOC_tokenizer_eng
+  tokenizerSL: MTUOC_tokenizer_cat
   #one of None, MTUOC_tokenizer_xxx, Moses
-  tokenizerTL: MTUOC_tokenizer_spa
+  tokenizerTL: MTUOC_tokenizer_eng
   #one of None, MTUOC_tokenizer_xxx, Moses
-  tokenizerSLcode: en
-  tokenizerTLcode: es
+  tokenizerSLcode: ca
+  tokenizerTLcode: en
   #if required by tokenizer
-  fwd_params_file: fwd_params
-  fwd_err_file: fwd_err
-  rev_params_file: rev_params
-  rev_err_file: rev_err
+  fwd_params_file: aina-mtuoc-translator-ca-en/Aina-ca-en.params
+  fwd_err_file: aina-mtuoc-translator-ca-en/Aina-ca-en.err
+  rev_params_file: aina-mtuoc-translator-ca-en/Aina-en-ca.params
+  rev_err_file: aina-mtuoc-translator-ca-en/Aina-en-ca.err
   
 Marian:
   startMarianServer: True
@@ -95,14 +95,14 @@ Marian:
   subword_model: spmodel.model
 
 Aina:
-  model_path: aina-mtuoc-translator-ca-en
+  model_path: aina-mtuoc-translator-en-ca
   revision: main
   beam_size: 5
   num_hypotheses: 5
 
 Transformers:
 #use the same configuration for OpusMT
-  model_path: Helsinki-NLP/opus-mt-en-es
+  model_path: Helsinki-NLP/opus-mt-en-ca
   #model_path: Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa
   beam_size: 5
   num_hypotheses: 5
@@ -111,6 +111,11 @@ NLLB:
   model: facebook/nllb-200-distilled-1.3B
   src_lang: eng_Latn
   tgt_lang: spa_Latn
+  beam_size: 5
+  num_hypotheses: 5
+  
+Softcatala:
+  model_dir: softcatala-eng-cat
   beam_size: 5
   num_hypotheses: 5
 
