@@ -48,12 +48,12 @@ def merge_translations(translations):
     srcM_tokens="".join(srcM_tokens)
     tgtM_tokens="".join(tgtM_tokens)
     merged_translation["src_tokens"]=srcM_tokens
-    merged_translation["tgt_tokens"]=srcM_tokens
+    merged_translation["tgt_tokens"]=tgtM_tokens
     
     srcM_subwords="".join(srcM_subwords)
     tgtM_subwords="".join(tgtM_subwords)
     merged_translation["src_subwords"]=srcM_subwords
-    merged_translation["tgt_subwords"]=srcM_subwords
+    merged_translation["tgt_subwords"]=tgtM_subwords
     
     return(merged_translation)
         
