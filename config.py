@@ -106,7 +106,20 @@ NLLB_translator=None
 softcatala_model_dir=None
 softcatala_translator=None
 softcatala_beam_size=1
-oftcatala_num_hypotheses=1
+softcatala_num_hypotheses=1
+
+#ctranslate2
+ctranslate2_translation_model=None
+ctranslate2_SL_spmodel=None
+ctranslate2_TL_spmodel=None
+ctranslate2_src_lang=None
+ctranslate2_tgt_lang=None
+beam_size=None
+num_hypotheses=None
+ctranslate2_translator=None
+ctranslate2_SL_sp=None
+ctranslate2_TL_sp=None
+ctranslate2_device="cpu"
 
 #GetWordAlignments
 GetWordAlignments_type="fast_align"

@@ -1,7 +1,7 @@
 MTEngine:
-  MTengine: Softcatala
-  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina
-  SLcode: en
+  MTengine: ctranslate2
+  #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina, ctranslate2
+  SLcode: hr
   TLcode: es
   multilingual: False
   #False or <2tgtlang> or any multilingual code used by the system.
@@ -56,12 +56,9 @@ Preprocess:
   maxlong: 10000
   separators: "; : ,"
 
-
-  
-
 Postprocess:
   restore_case: False
-  restore_tags: True
+  restore_tags: False
   numeric_check: True
   change_output_files: None
   change_output_delimiter: ;
@@ -109,8 +106,8 @@ Transformers:
   
 NLLB:
   model: facebook/nllb-200-distilled-1.3B
-  src_lang: eng_Latn
-  tgt_lang: spa_Latn
+  src_lang: hrv_Latn
+  tgt_lang: fra_Latn
   beam_size: 5
   num_hypotheses: 5
   
@@ -118,4 +115,14 @@ Softcatala:
   model_dir: softcatala-eng-cat
   beam_size: 5
   num_hypotheses: 5
+  
+ctranslate2:
+  translation_model: ./nllbOpenNMT/nllb-200-600M-ct2
+  SL_spmodel: ./nllbOpenNMT/flores200_sacrebleu_tokenizer_spm.model
+  TL_spmodel: ./nllbOpenNMT/flores200_sacrebleu_tokenizer_spm.model
+  src_lang: spa_Latn
+  tgt_lang: rus_Cyrl
+  beam_size: 5
+  num_hypotheses: 5
+  device: cpu
 

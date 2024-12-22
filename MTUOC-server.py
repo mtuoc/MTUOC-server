@@ -320,6 +320,31 @@ elif config.MTUOCServer_MTengine=="Softcatalà" or config.MTUOCServer_MTengine==
     config.softcatala_beam_size=configYAML["Softcatala"]["beam_size"]
     config.softcatala_num_hypotheses=configYAML["Softcatala"]["num_hypotheses"]
     printLOG(1,"Translating with Softcatalà models",config.softcatala_model_dir)
+    
+  
+elif config.MTUOCServer_MTengine=="ctranslate2":
+    from ctranslate2Translator import *
+    config.ctranslate2_translation_model=configYAML["ctranslate2"]["translation_model"]
+    config.ctranslate2_SL_spmodel=configYAML["ctranslate2"]["SL_spmodel"]
+    config.ctranslate2_TL_spmodel=configYAML["ctranslate2"]["TL_spmodel"]
+    config.ctranslate2_src_lang=configYAML["ctranslate2"]["src_lang"]
+    config.ctranslate2_tgt_lang=configYAML["ctranslate2"]["tgt_lang"]
+    config.ctranslate2_beam_size=configYAML["ctranslate2"]["beam_size"]
+    config.ctranslate2_num_hypotheses=configYAML["ctranslate2"]["num_hypotheses"]
+    config.ctranslate2_device=configYAML["ctranslate2"]["device"]
+    config.ctranslate2_translator=ctranslate2Translator()
+    config.ctranslate2_translator.set_translation_model(config.ctranslate2_translation_model)
+    #config.ctranslate2_translator.set_tokenizer(config.ctranslate2_spmodel)
+    config.ctranslate2_translator.set_SL_sp_model(config.ctranslate2_SL_spmodel)
+    config.ctranslate2_translator.set_TL_sp_model(config.ctranslate2_TL_spmodel)
+    config.ctranslate2_translator.set_beam_size(config.ctranslate2_beam_size)
+    config.ctranslate2_translator.set_num_hypotheses(config.ctranslate2_num_hypotheses)
+    config.ctranslate2_translator.set_device(config.ctranslate2_device)
+    config.ctranslate2_translator.set_src_lang(config.ctranslate2_src_lang)
+    config.ctranslate2_translator.set_tgt_lang(config.ctranslate2_tgt_lang)
+    
+    
+    printLOG(1,"Translating with ctranslate2 models",config.softcatala_model_dir)  
 
 if config.MTUOCServer_type=="MTUOC":
     from MTUOC_typeMTUOC import start_MTUOC_server

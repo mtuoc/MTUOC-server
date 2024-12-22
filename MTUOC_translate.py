@@ -48,12 +48,12 @@ def merge_translations(translations):
     srcM_tokens="".join(srcM_tokens)
     tgtM_tokens="".join(tgtM_tokens)
     merged_translation["src_tokens"]=srcM_tokens
-    merged_translation["tgt_tokens"]=tgtM_tokens
+    merged_translation["tgt_tokens"]=srcM_tokens
     
     srcM_subwords="".join(srcM_subwords)
     tgtM_subwords="".join(tgtM_subwords)
     merged_translation["src_subwords"]=srcM_subwords
-    merged_translation["tgt_subwords"]=tgtM_subwords
+    merged_translation["tgt_subwords"]=srcM_subwords
     
     return(merged_translation)
         
@@ -226,6 +226,16 @@ def translate_string(segment, segment_notags):
                 translationSTR=config.softcatala_translator.translate(segment)
         except:
             printLOG(2,"Error translating segment with Softcatalà",sys.exc_info())
+        return(translationSTR)
+        
+    if config.MTUOCServer_MTengine=="ctranslate2":
+        try:
+            if config.remove_tags:
+                translationSTR=config.ctranslate2_translator.translate(segment_notags)
+            else:
+                translationSTR=config.ctranslate2_translator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with ctranslate2",sys.exc_info())
         return(translationSTR)
             
     return(translationSTR)
