@@ -1,5 +1,5 @@
 MTEngine:
-  MTengine: ctranslate2
+  MTengine: NLLB
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina, ctranslate2
   SLcode: hr
   TLcode: es
@@ -105,9 +105,9 @@ Transformers:
   num_hypotheses: 5
   
 NLLB:
-  model: facebook/nllb-200-distilled-1.3B
-  src_lang: hrv_Latn
-  tgt_lang: fra_Latn
+  model: ./fine-tuned-NLLB200-distilled-600M-es-hr
+  src_lang: spa_Latn
+  tgt_lang: hrv_Latn
   beam_size: 5
   num_hypotheses: 5
   
