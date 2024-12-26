@@ -58,13 +58,14 @@ class NLLBTranslator:
         self.alternate_translations=[]
         self.src_tokens=self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))
         self.src_tokens=self.clean(self.src_tokens)
-        
-        self.translator = pipeline('translation', model=self.model, tokenizer=self.tokenizer, return_tensors =True, src_lang=self.src_lang, tgt_lang=self.tgt_lang,device=self.device, num_beams=self.beam_size, num_return_sequences=self.num_hypotheses) 
+        #avoid outputting <unk> with bad_words_ids
+        self.translator = pipeline('translation', model=self.model, tokenizer=self.tokenizer, return_tensors =True, src_lang=self.src_lang, tgt_lang=self.tgt_lang,device=self.device, num_beams=self.beam_size, num_return_sequences=self.num_hypotheses,bad_words_ids=[[self.tokenizer.unk_token_id]]) 
         self.target_seq_Tok = self.translator(text, max_length=1024)
         
         for i in range(0,len(self.target_seq_Tok)):
             self.alternate_translation={}
             self.alternate_translation["tgt_tokens"]=self.tokenizer.convert_ids_to_tokens(self.target_seq_Tok[i]['translation_token_ids'])
+            
             self.alternate_translation["tgt_tokens"]=self.clean(self.alternate_translation["tgt_tokens"])
             self.alternate_translation["alignments"]="None"
             self.alternate_translation["tgt"]="".join(self.alternate_translation["tgt_tokens"]).replace("▁"," ")
