@@ -8,53 +8,66 @@ if config.segment:
 
 def merge_translations(translations):
     merged_translation={}
-    srcM=[]
-    tgtM=[]
-    srcM_tokens=[]
-    tgtM_tokens=[]
-    srcM_subwords=[]
-    tgtM_subwords=[]
-    merged_translation["src"]=""
-    merged_translation["tgt"]=""
-    merged_translation["src_tokens"]=""
-    merged_translation["tgt_tokens"]=""
-    merged_translation["src_subwords"]=""
-    merged_translation["tgt_subwords"]=""
-    merged_translation["alignment"]="" 
-    merged_translation["alternate_translations"]=[]
+    if len(translations)==1:
+        merged_translation["src"]=translations[0]["src"]
+        merged_translation["tgt"]=translations[0]["tgt"]
+        merged_translation["src_tokens"]=translations[0]["src_tokens"]
+        merged_translation["tgt_tokens"]=translations[0]["tgt_tokens"]
+        merged_translation["src_subwords"]=translations[0]["src_subwords"]
+        merged_translation["tgt_subwords"]=translations[0]["tgt_subwords"]
+        merged_translation["alignment"]=translations[0]["alignment"]
+        merged_translation["alternate_translations"]=translations[0]["alternate_translations"]
+    else:
+        
+        srcM=[]
+        tgtM=[]
+        srcM_tokens=[]
+        tgtM_tokens=[]
+        srcM_subwords=[]
+        tgtM_subwords=[]
+        merged_translation["src"]=""
+        merged_translation["tgt"]=""
+        merged_translation["src_tokens"]=""
+        merged_translation["tgt_tokens"]=""
+        merged_translation["src_subwords"]=""
+        merged_translation["tgt_subwords"]=""
+        merged_translation["alignment"]="" 
+        merged_translation["alternate_translations"]={}
+        merged_translation["alternate_translations"]["tgt"]=[]
+        merged_translation["alternate_translations"]["src_tokens"]=[]
+        merged_translation["alternate_translations"]["tgt_tokens"]=[]
+        merged_translation["alternate_translations"]["src_subwords"]=[]
+        merged_translation["alternate_translations"]["tgt_subwords"]=[]
+        
 
-    contS=1
-    for tr in translations:
-        srcM.append(tr["src"])
-        tgtM.append(tr["tgt"])
-        
-        srcM_tokens.append(tr["src_tokens"])
-        tgtM_tokens.append(tr["tgt_tokens"])
-        
-        srcM_subwords.append(tr["src_subwords"])
-        tgtM_subwords.append(tr["tgt_subwords"])
-        
+        contS=1
+        for tr in translations:
+            srcM.append(tr["src"])
+            tgtM.append(tr["tgt"])
+            
+            srcM_tokens.append(tr["src_tokens"])
+            tgtM_tokens.append(tr["tgt_tokens"])
+            
+            srcM_subwords.append(tr["src_subwords"])
+            tgtM_subwords.append(tr["tgt_subwords"])
 
+            contS+=1
+            
+        srcM="".join(srcM)
+        tgtM="".join(tgtM)
+        merged_translation["src"]=srcM
+        merged_translation["tgt"]=tgtM
         
-        merged_translation["alternate_translations"].append(tr)
+        srcM_tokens="".join(srcM_tokens)
+        tgtM_tokens="".join(tgtM_tokens)
+        merged_translation["src_tokens"]=srcM_tokens
+        merged_translation["tgt_tokens"]=srcM_tokens
         
-        contS+=1
-        
-    srcM="".join(srcM)
-    tgtM="".join(tgtM)
-    merged_translation["src"]=srcM
-    merged_translation["tgt"]=tgtM
-    
-    srcM_tokens="".join(srcM_tokens)
-    tgtM_tokens="".join(tgtM_tokens)
-    merged_translation["src_tokens"]=srcM_tokens
-    merged_translation["tgt_tokens"]=srcM_tokens
-    
-    srcM_subwords="".join(srcM_subwords)
-    tgtM_subwords="".join(tgtM_subwords)
-    merged_translation["src_subwords"]=srcM_subwords
-    merged_translation["tgt_subwords"]=srcM_subwords
-    
+        srcM_subwords="".join(srcM_subwords)
+        tgtM_subwords="".join(tgtM_subwords)
+        merged_translation["src_subwords"]=srcM_subwords
+        merged_translation["tgt_subwords"]=srcM_subwords
+        merged_translation["alternate_translations"]=[]
     return(merged_translation)
         
     
@@ -101,6 +114,7 @@ def translate_para(paragraph):
     paralist=[sparagraph]
     try:
         if config.segment:
+            print("****SEGMENTING")
             for segmenter in config.segmenters:
                 paralist=segmenter.segmentList(paralist)
             if config.splitlongsegments:
@@ -117,6 +131,7 @@ def translate_para(paragraph):
                 translations.append(translation_segment)
             translation=merge_translations(translations)
         else:
+            print("****NOT SEGMENTING")
             translation=translate_segment(sparagraph)
         
     except:
