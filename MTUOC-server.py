@@ -332,7 +332,11 @@ elif config.MTUOCServer_MTengine=="ctranslate2":
     config.ctranslate2_SL_spmodel=configYAML["ctranslate2"]["SL_spmodel"]
     config.ctranslate2_TL_spmodel=configYAML["ctranslate2"]["TL_spmodel"]
     config.ctranslate2_src_lang=configYAML["ctranslate2"]["src_lang"]
+    if config.ctranslate2_src_lang=="None":
+        config.ctranslate2_src_lang=None
     config.ctranslate2_tgt_lang=configYAML["ctranslate2"]["tgt_lang"]
+    if config.ctranslate2_tgt_lang=="None":
+        config.ctranslate2_tgt_lang=None
     config.ctranslate2_beam_size=configYAML["ctranslate2"]["beam_size"]
     config.ctranslate2_num_hypotheses=configYAML["ctranslate2"]["num_hypotheses"]
     config.ctranslate2_device=configYAML["ctranslate2"]["device"]

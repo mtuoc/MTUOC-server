@@ -62,11 +62,15 @@ class ctranslate2Translator:
         translator = ctranslate2.Translator(self.translation_model, self.device)
 
         source_sentences = [text.strip()]
+        if self.tgt_lang==None: self.tgt_lang=""
         target_prefix = [[self.tgt_lang]] * len(source_sentences)
         
         # Subword the source sentences
         source_sents_subworded = spSL.encode_as_pieces(source_sentences)
-        source_sents_subworded = [[self.src_lang] + source_sents_subworded[0] + ["</s>"]]
+        if not self.src_lang==None:
+            source_sents_subworded = [[self.src_lang] + source_sents_subworded[0] + ["</s>"]]
+        else:
+            source_sents_subworded = [source_sents_subworded[0] + ["</s>"]]
         
         # Translate the source sentences
         translations_subworded = translator.translate_batch(source_sents_subworded, batch_type="tokens", max_batch_size=2024, beam_size=self.beam_size, num_hypotheses=self.num_hypotheses, target_prefix=target_prefix)
