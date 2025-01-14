@@ -52,6 +52,7 @@ def start_MTUOC_server():
                 jsonObject = {
                     "id": body["id"],
                     "src": body["src"],
+                    "system_name": ts["system_name"],
                     "tgt": ts["tgt"], 
                     "src_tokens": ts["src_tokens"],
                     "tgt_tokens": ts["tgt_tokens"],

@@ -103,10 +103,10 @@ class MarianTranslator():
             self.alternate_translations.append(self.alternate_translation)
 
         self.response={}
-        
+        self.response["system_name"]=config.system_name
         self.response["src_tokens"]=self.tokenized
         self.response["tgt_tokens"]=self.alternate_translations[0]["tgt_tokens"]
-        self.response["src_subwords"]=self.tokenized
+        self.response["src_subwords"]=" ".join(self.tokenized[0])
         self.response["tgt_subwords"]=self.alternate_translations[0]["tgt_tokens"]
         self.response["tgt"]=self.alternate_translations[0]["tgt"]
         self.response["alignment"]=self.alternate_translations[0]["alignment"]

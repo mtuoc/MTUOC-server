@@ -1,5 +1,8 @@
+system_name: EP-finetuned
+#system_name: OpusMT
+
 MTEngine:
-  MTengine: NLLB
+  MTengine: OpusMT
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina, ctranslate2
   SLcode: hr
   TLcode: es
@@ -28,7 +31,7 @@ Preprocess:
   #one of always, never, upper
   truecaser: MTUOC
   #one of MTUOC, Moses
-  truecaser_tokenizer: MTUOC_tokenizer_eng
+  truecaser_tokenizer: MTUOC_tokenizer_spa
   #one of None, MTUOC_tokenizer_xxx, Moses
   tcmodel: tc.ca
   MosesTokenizerLang: en
@@ -57,8 +60,8 @@ Preprocess:
   separators: "; : ,"
 
 Postprocess:
-  restore_case: False
-  restore_tags: False
+  restore_case: True
+  restore_tags: True
   numeric_check: True
   change_output_files: None
   change_output_delimiter: ;
@@ -69,19 +72,19 @@ Postprocess:
   
     
 GetWordAlignments:
-  type: None
+  type: fast_align
   #one of None, fast_align
-  tokenizerSL: MTUOC_tokenizer_cat
+  tokenizerSL: MTUOC_tokenizer_spa
   #one of None, MTUOC_tokenizer_xxx, Moses
-  tokenizerTL: MTUOC_tokenizer_eng
+  tokenizerTL: MTUOC_tokenizer_cat
   #one of None, MTUOC_tokenizer_xxx, Moses
-  tokenizerSLcode: ca
-  tokenizerTLcode: en
+  tokenizerSLcode: es
+  tokenizerTLcode: ca
   #if required by tokenizer
-  fwd_params_file: aina-mtuoc-translator-ca-en/Aina-ca-en.params
-  fwd_err_file: aina-mtuoc-translator-ca-en/Aina-ca-en.err
-  rev_params_file: aina-mtuoc-translator-ca-en/Aina-en-ca.params
-  rev_err_file: aina-mtuoc-translator-ca-en/Aina-en-ca.err
+  fwd_params_file: align-es-ca_params
+  fwd_err_file: align-es-ca_err
+  rev_params_file: align-ca-es_params
+  rev_err_file: align-ca-es_err
   
 Marian:
   startMarianServer: True
@@ -99,15 +102,15 @@ Aina:
 
 Transformers:
 #use the same configuration for OpusMT
-  model_path: Helsinki-NLP/opus-mt-en-ca
-  #model_path: Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa
+  model_path: fine-tuned-opusmt-EP-es-ca
+  #model_path: Helsinki-NLP/opus-mt-es-ca
   beam_size: 5
   num_hypotheses: 5
   
 NLLB:
-  model: ./fine-tuned-NLLB200-distilled-600M-es-hr
-  src_lang: spa_Latn
-  tgt_lang: hrv_Latn
+  model: facebook/nllb-200-distilled-1.3B
+  src_lang: hrv_Latn
+  tgt_lang: fra_Latn
   beam_size: 5
   num_hypotheses: 5
   
@@ -125,4 +128,8 @@ ctranslate2:
   beam_size: 5
   num_hypotheses: 5
   device: cpu
+  
+Apertium:
+  sl: spa
+  tl: cat
 

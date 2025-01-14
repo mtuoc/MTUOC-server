@@ -44,6 +44,8 @@ configYAML=yaml.load(stream, Loader=yaml.FullLoader)
 config.preprocessor=Preprocessor()
 config.postprocessor=Postprocessor()
 
+config.system_name=configYAML["system_name"]
+
 config.MTUOCServer_type=configYAML["MTUOCServer"]["type"]
 config.MTUOCServer_port=configYAML["MTUOCServer"]["port"]
 
@@ -129,6 +131,8 @@ if config.strategy=="bychunks":
     segmenter=TagsSegmenter()
     config.segmenters.append(segmenter)
 '''
+
+
 
 change_input_files=configYAML["Preprocess"]["change_input_files"].split(" ")
 change_input_delimiter=configYAML["Preprocess"]["change_input_delimiter"]
@@ -345,6 +349,15 @@ elif config.MTUOCServer_MTengine=="ctranslate2":
     
     
     printLOG(1,"Translating with ctranslate2 models",config.softcatala_model_dir)  
+
+
+if config.MTUOCServer_MTengine=="Apertium":
+    import apertium
+    from ApertiumTranslator import ApertiumTranslator
+    config.apertium_sl=configYAML["Apertium"]["sl"]
+    config.apertium_tl=configYAML["Apertium"]["tl"]
+    config.apertium_translator=ApertiumTranslator(config.apertium_sl,config.apertium_tl)
+    printLOG(1,"Translating with Apertium",config.softcatala_model_dir)
 
 if config.MTUOCServer_type=="MTUOC":
     from MTUOC_typeMTUOC import start_MTUOC_server

@@ -69,7 +69,6 @@ class ctranslate2Translator:
         source_sents_subworded = [[self.src_lang] + source_sents_subworded[0] + ["</s>"]]
         
         # Translate the source sentences
-        translator = ctranslate2.Translator(self.translation_model, device=self.device)
         translations_subworded = translator.translate_batch(source_sents_subworded, batch_type="tokens", max_batch_size=2024, beam_size=self.beam_size, num_hypotheses=self.num_hypotheses, target_prefix=target_prefix)
         translations_subworded = translations_subworded[0].hypotheses#[0] for translation in translations_subworded]
                

@@ -95,7 +95,7 @@ def translate_para(paragraph):
         paragraph=config.mpn.normalize(paragraph)
     if config.change_input:
         paragraph=config.preprocessor.change_input(paragraph)
-    
+    config.translation["system_name"]=config.system_name
     config.translation["src"]=paragraph
     config.translation["tgt"]=""
     config.translation["src_tokens"]=""
@@ -114,7 +114,6 @@ def translate_para(paragraph):
     paralist=[sparagraph]
     try:
         if config.segment:
-            print("****SEGMENTING")
             for segmenter in config.segmenters:
                 paralist=segmenter.segmentList(paralist)
             if config.splitlongsegments:
@@ -131,12 +130,13 @@ def translate_para(paragraph):
                 translations.append(translation_segment)
             translation=merge_translations(translations)
         else:
-            print("****NOT SEGMENTING")
             translation=translate_segment(sparagraph)
         
     except:
         printLOG(2,"ERROR in MTUOC_translate translate_para:",sys.exc_info())
     translation=add_leading_trailing_spances(translation,lSpara,tSpara)
+    
+    translation["system_name"]=config.system_name
     printLOG(2,"TRANSLATION PARA:",translation["tgt"])
     return(translation)
 
@@ -252,6 +252,17 @@ def translate_string(segment, segment_notags):
         except:
             printLOG(2,"Error translating segment with ctranslate2",sys.exc_info())
         return(translationSTR)
+        
+    if config.MTUOCServer_MTengine=="Apertium":
+        try:
+            
+            if config.remove_tags:
+                translationSTR=config.apertium_translator.translate(segment_notags)
+            else:
+                translationSTR=config.apertium_translator.translate(segment)
+        except:
+            printLOG(3,"Error translating segment with NLLB",sys.exc_info())
+        
             
     return(translationSTR)
 
@@ -263,7 +274,7 @@ def translate_segment(segment):
         config.src=segment
     config.translation={}
     config.casetype=config.preprocessor.analyze_segment_case(segment)
-    
+    config.translation["system_name"]=config.system_name
     config.translation["src"]=""
     config.translation["tgt"]=""
     config.translation["src_tokens"]=""
