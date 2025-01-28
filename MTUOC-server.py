@@ -202,6 +202,18 @@ GetWordAlignments_fwd_err_file=configYAML["GetWordAlignments"]["fwd_err_file"]
 GetWordAlignments_rev_params_file=configYAML["GetWordAlignments"]["rev_params_file"]
 GetWordAlignments_rev_err_file=configYAML["GetWordAlignments"]["rev_err_file"]
 
+###SBERT SCORER
+
+
+config.calculate_sbert=configYAML["Scoring"]["calculate_sbert"]
+config.sort_by_sbert=configYAML["Scoring"]["sort_by_sbert"]
+sbert_model=configYAML["Scoring"]["sbert_model"]
+
+if config.calculate_sbert:
+    from sbertScorer import sbertScorer
+    config.sbert_scorer=sbertScorer()
+    config.sbert_scorer.set_model(sbert_model)
+
 if config.GetWordAlignments_type=="None":
     config.GetWordAlignments_type=None
 elif config.GetWordAlignments_type=="fast_align":

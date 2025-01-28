@@ -1,8 +1,8 @@
-system_name: EP-finetuned
-#system_name: OpusMT
+system_name: EP-Marian
+
 
 MTEngine:
-  MTengine: OpusMT
+  MTengine: Marian
   #one of Marian, OpenNMT, Moses, GoogleTranslate, DeepL, Lucy, OpusMT, NLLB, Softcatalà, Apertium, Transformers, Aina, ctranslate2
   SLcode: hr
   TLcode: es
@@ -62,13 +62,20 @@ Preprocess:
 Postprocess:
   restore_case: True
   restore_tags: True
-  numeric_check: True
+  numeric_check: False
   change_output_files: None
   change_output_delimiter: ;
   change_output_quote: '"'
   change_translation_files: None
   change_translation_delimiter: ;
   change_translation_quote: '"'
+  
+Scoring:
+  #sbert
+  calculate_sbert: True
+  sort_by_sbert: True
+  sbert_model: LaBSE
+  # LaBSE is the default model and one model should be stated
   
     
 GetWordAlignments:
@@ -88,7 +95,7 @@ GetWordAlignments:
   
 Marian:
   startMarianServer: True
-  startMarianCommand: "./marian-server-GPU -m model.iter1750000.bin model.iter1210000.bin model.iter1440000.bin -v vocab-ca.yml vocab-es.yml -p 8250 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &"
+  startMarianCommand: "./marian-server-GPU -m model.npz.best-cross-entropy.bin -v vocab-es.yml vocab-ca.yml -p 8250 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &"
   IP: localhost
   port: 8250
   subword_type: SentencePiece

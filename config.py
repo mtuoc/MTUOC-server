@@ -66,6 +66,10 @@ numeric_check=False
 change_output=False
 change_translation=False
 
+calculate_sbert=False
+sbertScorer=None
+sort_by_sbert=False
+
 #Marian
 ws=None
 MarianTranslator=None

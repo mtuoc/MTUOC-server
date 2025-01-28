@@ -9,7 +9,7 @@ from MTUOC_misc import printLOG
 class Postprocessor:
     
     def __init__(self):
-        self.taglist=["<tag0>","<tag1>","<tag2>","<tag3>","<tag4>","<tag5>","<tag6>","<tag7>","<tag8>","<tag9>","<tag10>","</tag0>","</tag1>","</tag2>","</tag3>","</tag4>","</tag5>","</tag6>","</tag7>","</tag8>","</tag9>","</tag10>"]
+        self.taglist=["<tag0>","<tag1>","<tag2>","<tag3>","<tag4>","<tag5>","<tag6>","<tag7>","<tag8>","<tag9>","<tag10>","<tag11>","<tag12>","<tag13>","<tag14>","<tag15>","<tag16>","<tag17>","<tag18>","<tag19>","<tag20>","<tag21>","<tag22>","<tag23>","<tag24>","<tag25>","<tag26>","<tag27>","<tag28>","<tag29>","<tag30>","<tag31>","<tag32>","<tag33>","<tag34>","<tag35>","<tag36>","<tag37>","<tag38>","<tag39>","<tag40>","<tag41>","<tag42>","<tag43>","<tag44>","<tag45>","<tag46>","<tag47>","<tag48>","<tag49>","<tag50>","</tag0>","</tag1>","</tag2>","</tag3>","</tag4>","</tag5>","</tag6>","</tag7>","</tag8>","</tag9>","</tag10>","</tag11>","</tag12>","</tag13>","</tag14>","</tag15>","</tag16>","</tag17>","</tag18>","</tag19>","</tag20>","</tag21>","</tag22>","</tag23>","</tag24>","</tag25>","</tag26>","</tag27>","</tag28>","</tag29>","</tag30>","</tag31>","</tag32>","</tag33>","</tag34>","</tag35>","</tag36>","</tag37>","</tag38>","</tag39>","</tag40>","</tag41>","</tag42>","</tag43>","</tag44>","</tag45>","</tag46>","</tag47>","</tag48>","</tag49>","</tag50>"]
         self.changes_output=[]
         self.changes_translation=[]
         
@@ -63,7 +63,9 @@ class Postprocessor:
         numeratedsegment=[]
         cont=0
         for token in segment.split():
-            if not token.replace("▁","").strip() in self.taglist:
+            tokenmod=token.replace("▁","").strip()
+            condicio=tokenmod in self.taglist
+            if not condicio:
                 tokenmod=token+"▂"+str(cont)
                 cont+=1
             else:
@@ -297,7 +299,7 @@ class Postprocessor:
         TARGETTAGSTOKNUM=TARGETNOTAGSTOKNUM.split(" ")
         taglist=self.taglist.copy()
         #finding open-close pairs
-        for n in range(0,11):
+        for n in range(0,51):
             try:
                 opentag="<tag"+str(n)+">"
                 closetag="</tag"+str(n)+">"
@@ -316,7 +318,7 @@ class Postprocessor:
             except:
                 printLOG(2,"MTUOC_Postprocessor restore_tags:",sys.exc_info())
         #finding open tags
-        for n in range(0,11):
+        for n in range(0,51):
             try:
                 opentag="<tag"+str(n)+">"
                 regexp=opentag+" [^\s]+"
@@ -337,7 +339,7 @@ class Postprocessor:
             except:
                 printLOG(2,"ERROR MTUOC:Postprocessor restore_tags:",sys.exc_info())
         #finding closing tags
-        for n in range(0,11):
+        for n in range(0,51):
             try:
                 closingtag="</tag"+str(n)+">"
                 regexp="[^\s]+ "+closingtag
@@ -455,6 +457,8 @@ class Postprocessor:
             TARGETNOTAGSTOK=config.GetWordAlignments_tokenizerTL.tokenize(config.translation["tgt"])
             translation_tags=self.restore_tags(SOURCENOTAGSTOK, SOURCETAGSTOK, SELECTEDALIGNMENT, TARGETNOTAGSTOK)
             translation_tags=STARTINGTAG+" "+translation_tags+" "+CLOSINGTAG
+            
+            
             srcEQUILTAGS=config.src
             for t in TAGSEQUIL:
                 srcEQUILTAGS=srcEQUILTAGS.replace(TAGSEQUIL[t],t,1)
@@ -462,11 +466,10 @@ class Postprocessor:
             for t in TAGSEQUIL:
                 try:
                     translation_tags=translation_tags.replace(t,TAGSEQUIL[t],1)
-                    config.translation["tgt"]=translation_tags
                 except:
                     printLOG(2,"ERROR in MTUOC_Postprocessor insert tags:",sys.exc_info())
+            config.translation["tgt"]=translation_tags
             config.translation["tgt"]=config.GetWordAlignments_tokenizerTL.detokenize(config.translation["tgt"])
-           
                     
             
         except:

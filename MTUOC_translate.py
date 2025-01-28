@@ -282,6 +282,7 @@ def translate_segment(segment):
     config.translation["src_subwords"]=""
     config.translation["tgt_subwords"]=""
     config.translation["alignment"]=""
+    
     config.translation["alternate_translations"]=[]
     
     if not config.preprocessor.is_translatable(segment):
@@ -308,7 +309,6 @@ def translate_segment(segment):
         config.src_notags=config.truecaser.truecase(config.src_notags)    
     
     config.translation=translate_string(config.src, config.src_notags)
-    
     if not config.GetWordAlignments_type==None:
         try:
             toaligntokensSL=config.GetWordAlignments_tokenizerSL.tokenize(config.src_notags)
@@ -339,18 +339,45 @@ def translate_segment(segment):
         for tr in config.translation["alternate_translations"]:
             tr["tgt"]=tr["tgt"].upper()
     
+    config.translation["src"]=segment        
+    if config.calculate_sbert:
+    
+        temptranslations=[]
+        for trans in config.translation["alternate_translations"]:
+            temptranslations.append(trans["tgt"])
+        
+        sberts=config.sbert_scorer.sbertScoreStrLst(config.translation["src"],temptranslations)
+        print("***SBERTS:",sberts)
+        config.translation["sbert"]=sberts[0]
+        
+        cont=0
+        for trans in config.translation["alternate_translations"]:
+            trans["sbert"]=sberts[cont]
+            cont+=1
+
+    if config.calculate_sbert and config.sort_by_sbert:
+        sorted_alternate_translations = sorted(config.translation["alternate_translations"], key=lambda x: x['sbert'], reverse=True)
+        print("****sorted_alternate_translations",sorted_alternate_translations)
+        config.translation["alternate_translations"]=sorted_alternate_translations
+        config.translation["tgt"]=config.translation["alternate_translations"][0]["tgt"]
+        config.translation["tgt_tokens"]=config.translation["alternate_translations"][0]["tgt_tokens"]
+        config.translation["tgt_subwords"]=config.translation["alternate_translations"][0]["tgt_subwords"]
+        config.translation["alignment"]=config.translation["alternate_translations"][0]["alignment"]
+        config.translation["sbert"]=config.translation["alternate_translations"][0]["sbert"]
+    
     if config.restore_tags and config.strategy=="bysegments":
         try:
             config.postprocessor.insert_tags()
         except:
             printLOG(2,"Error postprocessing",sys.exc_info())
-    config.translation["src"]=segment
+    
+    '''
     if config.numeric_check:
         config.translation["tgt"]=config.postprocessor.check_and_replace_numeric(config.translation["src"], config.translation["tgt"])
-        '''
+        
         for tr in config.translation["alternate_translations"]:
             tr["tgt"]=config.postprocessor.check_and_replace_numeric(config.translation["src"], tr["tgt"])
-        '''
+    '''
     if config.change_output:
         config.translation=config.postprocessor.change_output(config.translation)
     if config.change_translation:
