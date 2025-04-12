@@ -1,0 +1,6 @@
+NLLB:
+  model: facebook/nllb-200-distilled-600M
+  src_lang: ast_Latn
+  tgt_lang: spa_Latn
+  beam_size: 5
+  num_hypotheses: 5

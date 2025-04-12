@@ -48,7 +48,9 @@ def start_MTUOC_server():
         def translateMTUOC():
             try:
                 body = request.get_json()
+                printLOG(3,"translateMTUOC body:", body,timestamp=False)
                 ts=translate_para(body["src"])
+                printLOG(3,"translateMTUOC ts:", ts,timestamp=False)
                 jsonObject = {
                     "id": body["id"],
                     "src": body["src"],
@@ -62,8 +64,12 @@ def start_MTUOC_server():
                     "alternate_translations": ts["alternate_translations"]
                    
                 }
-                
-                return jsonify(jsonObject)
+                try:
+                    jsonobjecttoreturn=jsonify(jsonObject)
+                except:
+                    printLOG(3,"ERROR json:", sys.exc_info(),timestamp=False)
+                printLOG(3,"translateMTUOC jsonobject:", jsonobjecttoreturn,timestamp=False)
+                return jsonobjecttoreturn
             except:
                 return make_response("Server Error", 500)
         

@@ -1,0 +1,6 @@
+Llama:
+  model: "meta-llama/Llama-3.2-3B-Instruct"
+  max_new_tokens: 256
+  role: "You are a professional translator specialized in Spanish to Croatian translations."
+  instruct_prefix: "Translate the following sentence from Spanish to Croatian and provide only the translation:"
+  instruct_postfix: ""

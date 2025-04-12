@@ -14,6 +14,7 @@ class ctranslate2Translator:
         self.beam_size=1
         self.num_hypotheses=1
         self.device=None
+        self.translator=None
         self.alternate_translations=[]
 
     def set_translation_model(self,translation_model):
@@ -47,6 +48,9 @@ class ctranslate2Translator:
             for i in range(c): 
                 self.llista.remove(item) 
         return(self.llista)
+        
+    def start_translator(self):
+        self.translator=ctranslate2.Translator(self.translation_model, self.device)
 
      
     def translate(self,text):
@@ -59,8 +63,6 @@ class ctranslate2Translator:
         spTL = spm.SentencePieceProcessor()
         spTL.load(self.TL_sp_model)
         
-        translator = ctranslate2.Translator(self.translation_model, self.device)
-
         source_sentences = [text.strip()]
         if self.tgt_lang==None: self.tgt_lang=""
         target_prefix = [[self.tgt_lang]] * len(source_sentences)
@@ -73,7 +75,7 @@ class ctranslate2Translator:
             source_sents_subworded = [source_sents_subworded[0] + ["</s>"]]
         
         # Translate the source sentences
-        translations_subworded = translator.translate_batch(source_sents_subworded, batch_type="tokens", max_batch_size=2024, beam_size=self.beam_size, num_hypotheses=self.num_hypotheses, target_prefix=target_prefix)
+        translations_subworded = self.translator.translate_batch(source_sents_subworded, batch_type="tokens", max_batch_size=2024, beam_size=self.beam_size, num_hypotheses=self.num_hypotheses, target_prefix=target_prefix)
         translations_subworded = translations_subworded[0].hypotheses#[0] for translation in translations_subworded]
                
         

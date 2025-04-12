@@ -23,8 +23,7 @@ class ApertiumTranslator:
         self.tl=tl
         
     def translate(self,text):
-        self.translation=apertium.translate(self.sl, self.tl, text)
-        
+        self.translation=config.apertium_translator(text, mark_unknown=config.apertium_mark_unknown)
         self.response={}
         self.response["src_tokens"]=text
         self.response["tgt_tokens"]=self.translation

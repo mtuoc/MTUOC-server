@@ -29,7 +29,7 @@ stream = open(configfile, 'r',encoding="utf-8")
 config=yaml.load(stream, Loader=yaml.FullLoader)
 
 MTUOCServer_port=config["MTUOCServer"]["port"]
-MTEngine=config["MTEngine"]["MTengine"]
+MTEngine=config["MTengine"]
 
 try:
     stopcommand2="fuser -k "+str(MTUOCServer_port)+"/tcp"
@@ -41,6 +41,9 @@ except:
 
 
 if MTEngine=="Marian":
+    configfile="config-Marian.yaml"
+    stream = open(configfile, 'r',encoding="utf-8")
+    config=yaml.load(stream, Loader=yaml.FullLoader)
     startMarianServer=config["Marian"]["startMarianServer"]
     MarianIP=config["Marian"]["IP"]
     MarianPort=config["Marian"]["port"]

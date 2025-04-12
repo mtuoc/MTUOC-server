@@ -1,6 +1,6 @@
-#    AinaTranslator v 2402
+#    AinaTranslator v 2502
 #    Description: an MTUOC server using Sentence Piece as preprocessing step
-#    Copyright (C) 2024  Antoni Oliver
+#    Copyright (C) 2025  Antoni Oliver
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,8 @@
 import ctranslate2
 import pyonmttok
 import os
-#from huggingface_hub import snapshot_download
+from MTUOC_misc import printLOG
+import config
 
 
 class AinaTranslator:
@@ -33,8 +34,10 @@ class AinaTranslator:
     def set_model(self,model_dir,revision):
         current_directory = os.getcwd()
         model_dir=os.path.join(current_directory,model_dir)
-        #self.model_dir = snapshot_download(repo_id=model_dir, revision=revision)
-        self.tokenizer=pyonmttok.Tokenizer(mode="none", sp_model_path = model_dir + "/spm.model")
+        try:
+            self.tokenizer=pyonmttok.Tokenizer(mode="none", sp_model_path = model_dir + "/spm.model")
+        except:
+            self.tokenizer=pyonmttok.Tokenizer(mode="none", sp_model_path = model_dir + "/sentencepiece.bpe.model")
         self.translator= ctranslate2.Translator(model_dir)
         
     def set_beam_size(self,beam_size):
@@ -52,9 +55,13 @@ class AinaTranslator:
         return(self.llista)
         
     def translate(self,text):
+        printLOG(3,"TRANSLATING WITH AINA:",text)
+        
         self.alternate_translations=[]
         self.tokenized=self.tokenizer.tokenize(text)
+        printLOG(4,"TOKENIZED:",self.tokenized)
         self.translation = self.translator.translate_batch([self.tokenized[0]],beam_size=self.beam_size,num_hypotheses=self.num_hypotheses)
+        printLOG(3,"TRANSLATED WITH AINA:",self.translation)
         
         for i in range(0,len(self.translation[0].hypotheses)):
             self.alternate_translation={}
@@ -76,7 +83,9 @@ class AinaTranslator:
         self.response["tgt_subwords"]=self.alternate_translations[0]["tgt_tokens"]
         self.response["tgt"]=self.alternate_translations[0]["tgt"]
         self.response["alignment"]=self.alternate_translations[0]["alignment"]
+        #self.alternate_translations.append(self.response)
         self.response["alternate_translations"]=self.alternate_translations
+        printLOG(4,"RESPONSE:",self.response)
         return(self.response)
         
 

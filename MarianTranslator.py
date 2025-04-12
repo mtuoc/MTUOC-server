@@ -25,19 +25,11 @@ import os
 
 from MTUOC_misc import printLOG
 
-from SentencePieceTokenizer import SentencePieceTokenizer
-
-
 class MarianTranslator():
     def __init__(self):
         self.model=None
         self.sl_vocab=None
         self.tl_vocab=None
-        self.subword_type=None
-        self.subword_model=None
-        self.tokenizer=None
-        self.beam_size=1
-        self.num_hypotheses=1
         self.alternate_translations=[]
         
     
@@ -49,15 +41,6 @@ class MarianTranslator():
         
     def set_tl_vocab(self,tl_vocab):
         self.tl_vocab=tl_vocab
-        
-    def set_subword_type(self,subword_type):
-        self.subword_type=subword_type
-        
-    def set_subword_model(self,subword_model):
-        self.subword_model=subword_model
-        self.tokenizer=SentencePieceTokenizer()
-        self.tokenizer.set_spmodel(self.subword_model)
-        
         
     def start_marian_server():
         printLOG(1, "START MT ENGINE:", config.startMarianCommand)
@@ -84,10 +67,9 @@ class MarianTranslator():
                 
     def translate(self,text):
         self.alternate_translations=[]
-        self.tokenized=self.tokenizer.tokenize(text)
         #self.translation = self.translator.translate_batch([self.tokenized[0]],beam_size=self.beam_size,num_hypotheses=self.num_hypotheses)
         try:
-            config.ws.send(self.tokenized)
+            config.ws.send(text)
         except:
             printLOG(1,"Error sending segment to Marian.",sys.exc_info())
         translations = config.ws.recv()
@@ -99,14 +81,14 @@ class MarianTranslator():
             self.alternate_translation["tgt_tokens"]=segmentaux
             self.alternate_translation["tgt_subwords"]=segmentaux
             self.alternate_translation["alignment"]=alignmentaux
-            self.alternate_translation["tgt"]=self.tokenizer.detokenize(segmentaux)
+            self.alternate_translation["tgt"]=segmentaux
             self.alternate_translations.append(self.alternate_translation)
 
         self.response={}
         self.response["system_name"]=config.system_name
-        self.response["src_tokens"]=self.tokenized
+        self.response["src_tokens"]=text
         self.response["tgt_tokens"]=self.alternate_translations[0]["tgt_tokens"]
-        self.response["src_subwords"]=" ".join(self.tokenized[0])
+        self.response["src_subwords"]=text
         self.response["tgt_subwords"]=self.alternate_translations[0]["tgt_tokens"]
         self.response["tgt"]=self.alternate_translations[0]["tgt"]
         self.response["alignment"]=self.alternate_translations[0]["alignment"]

@@ -1,0 +1,9 @@
+ctranslate2:
+  translation_model: ./model-EP-spa-cat
+  SL_spmodel: ./model-EP-spa-cat/spmodel.model
+  TL_spmodel: ./model-EP-spa-cat/spmodel.model
+  src_lang: spa_Latn
+  tgt_lang: cat_Latn
+  beam_size: 5
+  num_hypotheses: 5
+  device: cpu

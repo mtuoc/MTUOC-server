@@ -1,0 +1,6 @@
+SalamandraTA:
+  src_lang: Spanish
+  tgt_lang: Croatian
+  model_id: BSC-LT/salamandraTA-2b
+  beam_size: 5
+  num_hypotheses: 5

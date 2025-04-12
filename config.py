@@ -25,11 +25,15 @@ tokenizerTL=None
 
 tokenize=False
 truecase="never"
-
+truecaser=None
 use_MosesPunctNormalizer=False
 mpn=None
 fixencoding=False
 unescape_html=False
+
+sentencepiece=False
+spmodel=None
+sentencepiecetokenizer=None
 
 #segment with SRX file
 segment=True
@@ -91,6 +95,14 @@ AinaTranslator_revision=""
 AinaTranslator_beam_size=1
 AinaTranslator_num_hypotheses=1
 
+#SalamandraTA
+SalamandraTATranslator=None
+SalamandraTATranslator_src_lang=""
+SalamandraTATranslator_tgt_lang=""
+SalamandraTATranslator_model_id=""
+SalamandraTATranslator_beam_size=1
+SalamandraTATranslator_num_hypotheses=1
+
 #Transformers
 TransformersTranslator=None
 Transformers_model_path=None
@@ -104,6 +116,12 @@ NLLB_num_hypotheses=1
 NLLB_src_lang=None
 NLLB_tgt_lang=None
 NLLB_translator=None
+
+#M2M100
+M2M100_model=None
+M2M100_beam_size=1
+M2M100_num_hypotheses=1
+M2M100_translator=None
 
 #Softcatalà
 
@@ -124,6 +142,18 @@ ctranslate2_translator=None
 ctranslate2_SL_sp=None
 ctranslate2_TL_sp=None
 ctranslate2_device="cpu"
+
+#Llama
+Llama_translator=None
+Llama_model=None
+Llama_role=None
+Llama_max_new_tokens=256
+Llama_instruct_prefix=None
+Llama_instruct_postfix=None
+
+#Apertium
+
+apertium_mark_unknown=False
 
 #GetWordAlignments
 GetWordAlignments_type="fast_align"

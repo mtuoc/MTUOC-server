@@ -6,6 +6,7 @@ import sys
 import threading
 #from sacremoses import MosesTokenizer
 import platform
+import time
 
 # Simplified, non-threadsafe version for force_align.py
 # Use the version in realtime for development
@@ -77,9 +78,24 @@ class WordAligner:
     
     '''
     
-    
+    def start_subprocesses(self):
+        print("Starting subprocesses...", file=sys.stderr)
+        self.fwd_align =  self.popen_io(self.fwd_cmd)
+        self.rev_align =  self.popen_io(self.rev_cmd)
+        self.tools = self.popen_io(self.tools_cmd)
+
+    def restart_subprocesses(self):
+        print("Restarting subprocesses...", file=sys.stderr)
+        self.close()
+        self.start_subprocesses()
+        
+    def _subprocesses_alive(self):
+        """Check if all subprocesses are alive."""
+        processes = [self.fwd_align, self.rev_align, self.tools]
+        return all(proc and proc.poll() is None for proc in processes)
     
     def align(self, line):
+        '''
         try:
             self.fwd_align.stdin.write('{}\n'.format(line))
             self.rev_align.stdin.write('{}\n'.format(line))
@@ -90,6 +106,16 @@ class WordAligner:
         except BrokenPipeError:
             print("Broken pipe encountered when writing to fast_align subprocess", sys.exc_info())#file=sys.stderr)
             return None
+        '''
+        if not self._subprocesses_alive():
+            print("Subprocesses not running. Restarting...", file=sys.stderr)
+            self.restart_subprocesses()
+        self.fwd_align.stdin.write('{}\n'.format(line))
+        self.rev_align.stdin.write('{}\n'.format(line))
+        ###
+        self.fwd_align.stdin.flush()
+        self.rev_align.stdin.flush()
+        
         # f words ||| e words ||| links ||| score
         fwd_line = self.fwd_align.stdout.readline().split('|||')[2].strip()
         rev_line = self.rev_align.stdout.readline().split('|||')[2].strip()
@@ -99,6 +125,7 @@ class WordAligner:
         self.tools.stdin.flush()
         ###
         al_line = self.tools.stdout.readline().strip()
+        time.sleep(0.1)
         return al_line
  
     def close(self):

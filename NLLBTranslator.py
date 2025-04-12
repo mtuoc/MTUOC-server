@@ -80,5 +80,6 @@ class NLLBTranslator:
         self.response["tgt_subwords"]=self.alternate_translations[0]["tgt_tokens"]
         self.response["tgt"]=self.alternate_translations[0]["tgt"]
         self.response["alignment"]="None"
+        self.response["alternate_translations"]=self.alternate_translations
         return(self.response)
        

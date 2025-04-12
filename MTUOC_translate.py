@@ -121,6 +121,8 @@ def translate_para(paragraph):
             translations=[]
             for segment in paralist:
                 (lSsegment,tSsegment,ssegment)=config.preprocessor.leading_trailing_spaces(segment)
+                if config.sentencepiece:
+                    ssegment=config.sentencepiecetokenizer.tokenize(ssegment)
                 if config.strategy=="bysegments":
                     translation_segment=translate_segment(ssegment)
                 elif config.strategy=="bychunks":
@@ -130,6 +132,8 @@ def translate_para(paragraph):
                 translations.append(translation_segment)
             translation=merge_translations(translations)
         else:
+            if config.sentencepiece:
+                sparagraph=config.sentencepiecetokenizer.tokenize(sparagraph)
             translation=translate_segment(sparagraph)
         
     except:
@@ -137,6 +141,7 @@ def translate_para(paragraph):
     translation=add_leading_trailing_spances(translation,lSpara,tSpara)
     
     translation["system_name"]=config.system_name
+    printLOG(4,"TRANSLATION PARA:",translation)
     printLOG(2,"TRANSLATION PARA:",translation["tgt"])
     return(translation)
 
@@ -195,26 +200,9 @@ def translate_chunks(segment):
     return(config.translation)
     
 def translate_string(segment, segment_notags):
-    if config.MTUOCServer_MTengine=="Marian":
-        try:
-            if config.remove_tags:
-                translationSTR=config.MarianTranslator.translate(segment_notags)
-            else:
-                translationSTR=config.MarianTranslator.translate(segment)
-        except:
-            printLOG(2,"Error translating segment with Marian",sys.exc_info())
-
-    if config.MTUOCServer_MTengine=="Aina":
-        try:
-            if config.remove_tags:
-                translationSTR=config.AinaTranslator.translate(segment_notags)
-            else:
-                translationSTR=config.AinaTranslator.translate(segment)
-        except:
-            printLOG(2,"Error translating segment with Aina",sys.exc_info())
     
-    
-    if config.MTUOCServer_MTengine=="Transformers":
+            
+    if config.MTUOCServer_MTengine=="Transformers" or config.MTUOCServer_MTengine=="OpusMT":
         try:
             if config.remove_tags:
                 translationSTR=config.TransformersTranslator.translate(segment_notags)
@@ -223,7 +211,8 @@ def translate_string(segment, segment_notags):
         except:
             printLOG(2,"Error translating segment with Transformers",sys.exc_info())
             
-    if config.MTUOCServer_MTengine=="NLLB":
+    
+    elif config.MTUOCServer_MTengine=="NLLB":
         try:
             if config.remove_tags:
                 translationSTR=config.NLLB_translator.translate(segment_notags)
@@ -233,7 +222,49 @@ def translate_string(segment, segment_notags):
             printLOG(2,"Error translating segment with NLLB",sys.exc_info())
         return(translationSTR)
         
-    if config.MTUOCServer_MTengine=="Softcatalà" or config.MTUOCServer_MTengine=="Softcatala":
+    elif config.MTUOCServer_MTengine=="Marian":
+        try:
+            if config.remove_tags:
+                translationSTR=config.MarianTranslator.translate(segment_notags)
+            else:
+                translationSTR=config.MarianTranslator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with Marian",sys.exc_info())        
+    
+    elif config.MTUOCServer_MTengine=="Aina":
+        try:
+            if config.remove_tags:
+                translationSTR=config.AinaTranslator.translate(segment_notags)
+            else:
+                translationSTR=config.AinaTranslator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with Aina",sys.exc_info())
+    
+    elif config.MTUOCServer_MTengine=="SalamandraTA":
+
+        try:
+            if config.remove_tags:
+                translationSTR=config.SalamandraTATranslator.translate(segment_notags)
+            else:
+                translationSTR=config.SalamandraTATranslator.translate(segment)                
+        except:
+            printLOG(2,"Error translating segment with SalamandraTA",sys.exc_info())
+
+            
+
+
+    elif config.MTUOCServer_MTengine=="M2M100":
+        try:
+            if config.remove_tags:
+                translationSTR=config.M2M100_translator.translate(segment_notags)
+            else:
+                translationSTR=config.M2M100_translator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with M2M100",sys.exc_info())
+        return(translationSTR)
+
+
+    elif config.MTUOCServer_MTengine=="Softcatalà" or config.MTUOCServer_MTengine=="Softcatala":
         try:
             if config.remove_tags:
                 translationSTR=config.softcatala_translator.translate(segment_notags)
@@ -243,7 +274,7 @@ def translate_string(segment, segment_notags):
             printLOG(2,"Error translating segment with Softcatalà",sys.exc_info())
         return(translationSTR)
         
-    if config.MTUOCServer_MTengine=="ctranslate2":
+    elif config.MTUOCServer_MTengine=="ctranslate2":
         try:
             if config.remove_tags:
                 translationSTR=config.ctranslate2_translator.translate(segment_notags)
@@ -251,9 +282,9 @@ def translate_string(segment, segment_notags):
                 translationSTR=config.ctranslate2_translator.translate(segment)
         except:
             printLOG(2,"Error translating segment with ctranslate2",sys.exc_info())
-        return(translationSTR)
         
-    if config.MTUOCServer_MTengine=="Apertium":
+        
+    elif config.MTUOCServer_MTengine=="Apertium":
         try:
             
             if config.remove_tags:
@@ -261,7 +292,24 @@ def translate_string(segment, segment_notags):
             else:
                 translationSTR=config.apertium_translator.translate(segment)
         except:
-            printLOG(3,"Error translating segment with NLLB",sys.exc_info())
+            printLOG(3,"Error translating segment with Apertium",sys.exc_info())
+            
+    elif config.MTUOCServer_MTengine=="Llama":
+        print("AQUI")
+        try:
+            
+            if config.remove_tags:
+                totranslate=config.Llama_instruct_prefix+" "+segment_notags+" "+config.Llama_instruct_postfix
+                print("TOTRANSLATERT",totranslate)
+                translationSTR=config.Llama_translator.generate(totranslate)
+                print("translationSTR",translationSTR)
+            else:
+                totranslate=config.Llama_instruct_prefix+" "+segment+" "+config.Llama_instruct_postfix
+                print("TOTRANSLATERT",totranslate)
+                translationSTR=config.Llama_translator.generate(totranslate)
+                print("translationSTR",translationSTR)
+        except:
+            printLOG(3,"Error translating segment with Llama",sys.exc_info())
         
             
     return(translationSTR)
@@ -307,7 +355,6 @@ def translate_segment(segment):
     elif config.truecase=="upper" and config.casetype=="upper": dotruecase=True
     if dotruecase:
         config.src_notags=config.truecaser.truecase(config.src_notags)    
-    
     config.translation=translate_string(config.src, config.src_notags)
     if not config.GetWordAlignments_type==None:
         try:
@@ -334,6 +381,12 @@ def translate_segment(segment):
         #except:
         #    print("ERROR MTUOC_translate translate_segment GetWordAlignments:",sys.exc_info())
         '''
+        
+    if config.sentencepiece:
+        config.translation["tgt"]=config.sentencepiecetokenizer.detokenize(config.translation["tgt"])
+        for tr in config.translation["alternate_translations"]:
+            tr["tgt"]=config.sentencepiecetokenizer.detokenize(tr["tgt"])
+        
     if config.restore_case and config.casetype=="upper":
         config.translation["tgt"]=config.translation["tgt"].upper()
         for tr in config.translation["alternate_translations"]:
@@ -378,6 +431,7 @@ def translate_segment(segment):
         for tr in config.translation["alternate_translations"]:
             tr["tgt"]=config.postprocessor.check_and_replace_numeric(config.translation["src"], tr["tgt"])
     '''
+    
     if config.change_output:
         config.translation=config.postprocessor.change_output(config.translation)
     if config.change_translation:

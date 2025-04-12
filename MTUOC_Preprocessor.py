@@ -141,6 +141,9 @@ class Preprocessor:
         return(segment)
         
     def analyze_segment_case(self, s: str) -> str:
+        #REMOVE TAGS
+        s=self.remove_tags(s)
+        
         # Check if the string is empty or contains no alphabetic characters
         if not any(c.isalpha() for c in s):
             return "no_case"

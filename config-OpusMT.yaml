@@ -1,0 +1,7 @@
+OpusMT:
+#use the same configuration for OpusMT
+  #model_path: fine-tuned-opusmt-EP-es-ca
+  model_path: Helsinki-NLP/opus-mt-en-es
+  beam_size: 5
+  num_hypotheses: 5
+  multilingual: ">>por<<"
