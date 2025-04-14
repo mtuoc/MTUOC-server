@@ -1,7 +1,6 @@
 ctranslate2
 torch
 Flask
-pyonmttok
 lxml
 sentencepiece
 regex
@@ -11,3 +10,5 @@ ftfy
 PyYAML
 waitress
 websocket_client
+protobuf
+pyonmttok
