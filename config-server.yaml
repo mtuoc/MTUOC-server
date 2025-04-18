@@ -6,7 +6,6 @@ MTUOCServer:
   type: MTUOC
   #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
   verbosity_level: 2
-  #specific configuration when acting as ONMT server
   log_file: log.log
 
 
