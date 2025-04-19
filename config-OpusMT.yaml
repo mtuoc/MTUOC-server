@@ -4,4 +4,5 @@ OpusMT:
   model_path: Helsinki-NLP/opus-mt-en-es
   beam_size: 5
   num_hypotheses: 5
-  multilingual: ">>por<<"
+  multilingual: False
+  #False for bilingual models; target language code (p.e. ">>por<<") for multilingual models
