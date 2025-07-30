@@ -55,7 +55,6 @@ class ctranslate2Translator:
      
     def translate(self,text):
 
-
         # Load the source SentecePiece model
         spSL = spm.SentencePieceProcessor()
         spSL.load(self.SL_sp_model)
@@ -73,11 +72,10 @@ class ctranslate2Translator:
             source_sents_subworded = [[self.src_lang] + source_sents_subworded[0] + ["</s>"]]
         else:
             source_sents_subworded = [source_sents_subworded[0] + ["</s>"]]
-        
         # Translate the source sentences
         translations_subworded = self.translator.translate_batch(source_sents_subworded, batch_type="tokens", max_batch_size=2024, beam_size=self.beam_size, num_hypotheses=self.num_hypotheses, target_prefix=target_prefix)
         translations_subworded = translations_subworded[0].hypotheses#[0] for translation in translations_subworded]
-               
+        
         
         #Delete language codes
         source_sent_subworded=source_sents_subworded[0]

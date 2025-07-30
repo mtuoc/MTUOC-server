@@ -26,7 +26,7 @@ class LlamaTranslator:
         self.pipe= pipeline(
             "text-generation",
             model=self.model,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
             device_map="auto",
             )
         self.role=None
@@ -39,7 +39,6 @@ class LlamaTranslator:
         self.max_new_tokens=mnt
 
     def generate(self,text):
-        print("GENERATE:",text)
         messages = [
             {"role": "system", "content": self.role},
             {"role": "user", "content": text}
@@ -48,7 +47,6 @@ class LlamaTranslator:
             messages,
             max_new_tokens=self.max_new_tokens,
         )
-        print("***outputs",outputs)
         self.answer=outputs[0]["generated_text"][-1]['content']
         self.alternate_translations=[]
         self.response={}

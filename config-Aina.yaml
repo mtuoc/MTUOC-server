@@ -1,5 +1,5 @@
 Aina:
-  model: es-ast
+  model: es-oc_aran
   revision: main
   beam_size: 5
   num_hypotheses: 5

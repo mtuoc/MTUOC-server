@@ -1,9 +1,9 @@
 ctranslate2:
-  translation_model: ./model-EP-spa-cat
-  SL_spmodel: ./model-EP-spa-cat/spmodel.model
-  TL_spmodel: ./model-EP-spa-cat/spmodel.model
-  src_lang: spa_Latn
-  tgt_lang: cat_Latn
+  translation_model: ./ct2model-EP-20250605-spa-cat/ct2_model
+  SL_spmodel: ./ct2model-EP-20250605-spa-cat/spmodel.model
+  TL_spmodel: ./ct2model-EP-20250605-spa-cat/spmodel.model
+  src_lang: ""
+  tgt_lang: ""
   beam_size: 5
   num_hypotheses: 5
-  device: cpu
+  device: cuda
