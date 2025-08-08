@@ -363,7 +363,9 @@ elif config.MTUOCServer_MTengine=="NLLB":
     config.NLLB_num_hypotheses=configYAML2["NLLB"]["num_hypotheses"]
     config.NLLB_src_lang=configYAML2["NLLB"]["src_lang"]
     config.NLLB_tgt_lang=configYAML2["NLLB"]["tgt_lang"]
+    config.NLLB_device=configYAML2["NLLB"]["device"]
     config.NLLB_translator=NLLBTranslator()
+    config.NLLB_translator.set_device(config.NLLB_device)
     config.NLLB_translator.set_model(config.NLLB_model,config.NLLB_src_lang,config.NLLB_tgt_lang)
     config.NLLB_translator.set_beam_size(config.NLLB_beam_size)
     config.NLLB_translator.set_num_hypotheses(config.NLLB_num_hypotheses)
