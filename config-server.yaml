@@ -1,4 +1,4 @@
-MTengine: NLLB
+MTengine: Marian
 system_name: EP-spa-cat
 
 MTUOCServer:
