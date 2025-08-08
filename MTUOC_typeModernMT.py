@@ -47,7 +47,7 @@ def start_ModernMT_server():
                 out['data']={}
                 segment=request.args['q']
                 translation=translate_para(segment)
-                out['data']['translation']=translation['tgt']
+                out['data']['translation']=translation['tgt']+" "
             except:
                 out['status'] = STATUS_ERROR
             return jsonify(out)

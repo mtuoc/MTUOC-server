@@ -121,12 +121,12 @@ def translate_para(paragraph):
             translations=[]
             for segment in paralist:
                 (lSsegment,tSsegment,ssegment)=config.preprocessor.leading_trailing_spaces(segment)
-                if config.sentencepiece:
-                    ssegment=config.sentencepiecetokenizer.tokenize(ssegment)
-                if config.strategy=="bysegments":
-                    translation_segment=translate_segment(ssegment)
-                elif config.strategy=="bychunks":
-                    translation_segment=translate_chunks(ssegment)
+                #if config.sentencepiece:
+                #    ssegment=config.sentencepiecetokenizer.tokenize(ssegment)
+                #if config.strategy=="bysegments":
+                translation_segment=translate_segment(ssegment)
+                #elif config.strategy=="bychunks":
+                #    translation_segment=translate_chunks(ssegment)
                     
                 translation_segment=add_leading_trailing_spances(translation_segment,lSsegment,tSsegment)
                 translations.append(translation_segment)
@@ -161,6 +161,7 @@ def is_tag(tag):
     # Use re.match to check if the tag matches the pattern
     return re.match(pattern, tag) is not None
 
+'''
 def translate_chunks(segment):
     printLOG(2,"SEGMENT:",segment)
        
@@ -198,8 +199,13 @@ def translate_chunks(segment):
     config.translation["tgt"]=translation
     printLOG(2,"TRANSLATION SEGMENT:",config.translation["tgt"])
     return(config.translation)
-    
+'''
+
 def translate_string(segment, segment_notags):
+    
+    if config.sentencepiece:
+        segment=config.sentencepiecetokenizer.tokenize(segment)
+        segment_notags=config.sentencepiecetokenizer.tokenize(segment_notags)
     
             
     if config.MTUOCServer_MTengine=="Transformers" or config.MTUOCServer_MTengine=="OpusMT":
@@ -229,7 +235,17 @@ def translate_string(segment, segment_notags):
             else:
                 translationSTR=config.MarianTranslator.translate(segment)
         except:
-            printLOG(2,"Error translating segment with Marian",sys.exc_info())        
+            printLOG(2,"Error translating segment with Marian",sys.exc_info())  
+        
+    
+    elif config.MTUOCServer_MTengine=="Ollama":
+        try:
+            if config.remove_tags:
+                translationSTR=config.ollamaTranslator.translate(segment_notags)
+            else:
+                translationSTR=config.ollamaTranslator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with Ollama",sys.exc_info())  
     
     elif config.MTUOCServer_MTengine=="Aina":
         try:
@@ -295,19 +311,14 @@ def translate_string(segment, segment_notags):
             printLOG(3,"Error translating segment with Apertium",sys.exc_info())
             
     elif config.MTUOCServer_MTengine=="Llama":
-        print("AQUI")
         try:
             
             if config.remove_tags:
                 totranslate=config.Llama_instruct_prefix+" "+segment_notags+" "+config.Llama_instruct_postfix
-                print("TOTRANSLATERT",totranslate)
                 translationSTR=config.Llama_translator.generate(totranslate)
-                print("translationSTR",translationSTR)
             else:
                 totranslate=config.Llama_instruct_prefix+" "+segment+" "+config.Llama_instruct_postfix
-                print("TOTRANSLATERT",totranslate)
                 translationSTR=config.Llama_translator.generate(totranslate)
-                print("translationSTR",translationSTR)
         except:
             printLOG(3,"Error translating segment with Llama",sys.exc_info())
         
@@ -337,7 +348,10 @@ def translate_segment(segment):
         config.translation["tgt"]=segment
         printLOG(2,"TRANSLATION SEGMENT:",config.translation["tgt"])
         return(config.translation)
-    
+    if len(segment)>=config.max_segment_chars:
+        config.translation["tgt"]=segment
+        printLOG(2,"TRANSLATION SEGMENT LENGTH EXCEEDED:",config.translation["tgt"])
+        return(config.translation)
     config.src_modtags=config.src
     if config.preprocessor.has_tags(config.src):
         config.src_notags=config.preprocessor.remove_tags(config.src)
@@ -349,12 +363,12 @@ def translate_segment(segment):
         config.src_notags=config.src
         config.src_notags_tokens_=config.src_tokens
         config.src_tokens=config.src_notags_tokens
-        
     dotruecase=False
     if config.truecase=="always": dotruecase=True
+    
     elif config.truecase=="upper" and config.casetype=="upper": dotruecase=True
     if dotruecase:
-        config.src_notags=config.truecaser.truecase(config.src_notags)    
+        config.src_notags=config.truecaser.truecase(config.src_notags)
     config.translation=translate_string(config.src, config.src_notags)
     if not config.GetWordAlignments_type==None:
         try:
@@ -381,26 +395,24 @@ def translate_segment(segment):
         #except:
         #    print("ERROR MTUOC_translate translate_segment GetWordAlignments:",sys.exc_info())
         '''
-        
     if config.sentencepiece:
         config.translation["tgt"]=config.sentencepiecetokenizer.detokenize(config.translation["tgt"])
         for tr in config.translation["alternate_translations"]:
             tr["tgt"]=config.sentencepiecetokenizer.detokenize(tr["tgt"])
-        
     if config.restore_case and config.casetype=="upper":
         config.translation["tgt"]=config.translation["tgt"].upper()
         for tr in config.translation["alternate_translations"]:
             tr["tgt"]=tr["tgt"].upper()
     
     config.translation["src"]=segment        
+    '''
     if config.calculate_sbert:
-    
+        
         temptranslations=[]
         for trans in config.translation["alternate_translations"]:
             temptranslations.append(trans["tgt"])
         
         sberts=config.sbert_scorer.sbertScoreStrLst(config.translation["src"],temptranslations)
-        print("***SBERTS:",sberts)
         config.translation["sbert"]=sberts[0]
         
         cont=0
@@ -410,15 +422,34 @@ def translate_segment(segment):
 
     if config.calculate_sbert and config.sort_by_sbert:
         sorted_alternate_translations = sorted(config.translation["alternate_translations"], key=lambda x: x['sbert'], reverse=True)
-        print("****sorted_alternate_translations",sorted_alternate_translations)
         config.translation["alternate_translations"]=sorted_alternate_translations
         config.translation["tgt"]=config.translation["alternate_translations"][0]["tgt"]
         config.translation["tgt_tokens"]=config.translation["alternate_translations"][0]["tgt_tokens"]
         config.translation["tgt_subwords"]=config.translation["alternate_translations"][0]["tgt_subwords"]
         config.translation["alignment"]=config.translation["alternate_translations"][0]["alignment"]
         config.translation["sbert"]=config.translation["alternate_translations"][0]["sbert"]
+    '''
+    if config.calculate_sbert:
+        sbertindex=config.sbertScorer.sbertScoreStrStr(config.translation["src"],config.translation["tgt"])
+        printLOG(2,"SBERT",sbertindex)
     
-    if config.restore_tags and config.strategy=="bysegments":
+    if config.AutomaticPostedition=="HFPosteditor" and sbertindex<=config.postedition_sbert_threshold:
+        printLOG(2,"POSTEDITING",sbertindex)
+        posteditedTranslation=config.HFPosteditor.postedit(config.src_notags,config.translation["tgt"])
+        printLOG(2,config.translation["tgt"],posteditedTranslation)
+        if config.translation["tgt"].strip()==posteditedTranslation.strip():
+            printLOG(2,"NO CHANGES IN POSTEDITION",sbertindex)
+        config.translation["tgt"]=posteditedTranslation
+        
+    if config.AutomaticPostedition=="OllamaPosteditor" and sbertindex<=config.postedition_sbert_threshold:
+        printLOG(2,"POSTEDITING",sbertindex)
+        posteditedTranslation=config.OllamaPosteditor.postedit(config.src_notags,config.translation["tgt"])
+        printLOG(2,config.translation["tgt"],posteditedTranslation)
+        if config.translation["tgt"].strip()==posteditedTranslation.strip():
+            printLOG(2,"NO CHANGES IN POSTEDITION",sbertindex)
+        config.translation["tgt"]=posteditedTranslation
+    
+    if config.restore_tags:# and config.strategy=="bysegments":
         try:
             config.postprocessor.insert_tags()
         except:

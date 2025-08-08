@@ -1,4 +1,4 @@
-#    MTUOC-server v 2502
+#    MTUOC-server v 2507
 #    Description: an MTUOC server using Sentence Piece as preprocessing step
 #    Copyright (C) 2025  Antoni Oliver
 #    This program is free software: you can redistribute it and/or modify
@@ -51,6 +51,8 @@ config.MTUOCServer_MTengine=configYAML["MTengine"]
 config.MTUOCServer_type=configYAML["MTUOCServer"]["type"]
 config.MTUOCServer_port=configYAML["MTUOCServer"]["port"]
 
+
+
 config.verbosity_level=int(configYAML["MTUOCServer"]["verbosity_level"])
 config.log_file=configYAML["MTUOCServer"]["log_file"]
 
@@ -60,17 +62,65 @@ else:
     config.sortidalog=codecs.open(config.log_file,"a",encoding="utf-8")
     config.log_file=True
     
+config.max_segment_chars=1000000000
+config.checkistranslatable=False
+config.use_MosesPunctNormalizer=False
+config.mpn = None
+tokenize=False
+tokenizer=None
+MosesTokenizerLang=None
+config.tokenizerSL=None
+config.truecase=False
+truecaser=None
+truecaser_tokenizer=None
+tcmodel=None
+MosesTokenizerLang=None
+config.remove_tags=False
+config.segment=False
+config.srxfiles=None
+config.srxlang=None
+config.segmenters=[]
+
+config.splitlongsegments=False
+config.maxlong=100000000
+config.separators=None
+change_input_files=None
+change_input_delimiter=None
+change_input_quote=None
+changes_input=[]
+config.preprocessor.set_changes_input(changes_input)
+change_output_files=None
+change_output_delimiter=None
+change_output_quote=None
+changes_output=[]
+config.postprocessor.set_changes_output(changes_output)
+change_translation_files=None
+change_translation_delimiter=None
+change_translation_quote=None
+changes_translation=[]
+config.postprocessor.set_changes_translation(changes_translation)
+config.remove_control_characters=False
+config.remove_non_printable=False
+config.remove_non_latin_extended_chars=False
+config.remove_non_unicode_script_chars=False
+config.sentencepiece=False
+config.spmodel=None
+config.restore_case=False
+config.restore_tags=False
+config.numeric_check=False
+config.GetWordAlignments_type=None
+config.GetWordAlignments_tokenizerSL=None
+config.GetWordAlignments_tokenizerTL=None
+GetWordAlignments_tokenizerSLcode=None
+GetWordAlignments_tokenizerTLcode=None
+GetWordAlignments_fwd_params_file=None
+GetWordAlignments_fwd_err_file=None
+GetWordAlignments_rev_params_file=None
+GetWordAlignments_rev_err_file=None
     
-####
-
-config.verbosity_level=int(configYAML["MTUOCServer"]["verbosity_level"])
-config.log_file=configYAML["MTUOCServer"]["log_file"]
-
-
+config.max_segment_chars=configYAML["Preprocess"]["max_segment_chars"]
 config.checkistranslatable=configYAML["Preprocess"]["checkistranslatable"]
-
 config.use_MosesPunctNormalizer=configYAML["Preprocess"]["use_MosesPunctNormalizer"]
-
 if config.use_MosesPunctNormalizer:
     from sacremoses import MosesPunctNormalizer
     config.mpn = MosesPunctNormalizer()
@@ -126,18 +176,6 @@ config.splitlongsegments=configYAML["Preprocess"]["splitlongsegments"]
 config.maxlong=configYAML["Preprocess"]["maxlong"]
 config.separators=configYAML["Preprocess"]["separators"].split()
 
-
-config.strategy=configYAML["Preprocess"]["strategy"]
-
-'''
-if config.strategy=="bychunks":
-    from MTUOC_TagsSegmenter import TagsSegmenter
-    segmenter=TagsSegmenter()
-    config.segmenters.append(segmenter)
-'''
-
-
-
 change_input_files=configYAML["Preprocess"]["change_input_files"].split(" ")
 change_input_delimiter=configYAML["Preprocess"]["change_input_delimiter"]
 change_input_quote=configYAML["Preprocess"]["change_input_quote"]
@@ -188,14 +226,6 @@ config.remove_non_printable=configYAML["Preprocess"]["remove_non_printable"]
 config.remove_non_latin_extended_chars=configYAML["Preprocess"]["remove_non_latin_extended_chars"]
 config.remove_non_unicode_script_chars=configYAML["Preprocess"]["remove_non_unicode_script_chars"]
 
-config.sentencepiece=configYAML["Preprocess"]["sentencepiece"]
-config.spmodel=configYAML["Preprocess"]["spmodel"]
-if config.sentencepiece:
-    from SentencePieceTokenizer import SentencePieceTokenizer
-    config.sentencepiecetokenizer=SentencePieceTokenizer()
-    config.sentencepiecetokenizer.set_spmodel(config.spmodel)
-
-
 
 config.restore_case=configYAML["Postprocess"]["restore_case"]
 config.restore_tags=configYAML["Postprocess"]["restore_tags"]
@@ -214,8 +244,78 @@ GetWordAlignments_fwd_err_file=configYAML["GetWordAlignments"]["fwd_err_file"]
 
 GetWordAlignments_rev_params_file=configYAML["GetWordAlignments"]["rev_params_file"]
 GetWordAlignments_rev_err_file=configYAML["GetWordAlignments"]["rev_err_file"]
-####
 
+###
+#sbertscorer
+config.calculate_sbert=configYAML["Scoring"]["calculate_sbert"]
+if config.calculate_sbert:
+    from sbertScorer import *
+    config.sbertScorer=sbertScorer()
+    config.sbertScorer.set_model()
+    config.sort_by_sbert=configYAML["Scoring"]["sort_by_sbert"]
+
+####
+#Automatic postedition
+config.AutomaticPostedition=configYAML["AutomaticPostedition"]["type"]
+config.postedition_sbert_threshold=configYAML["AutomaticPostedition"]["sbert_threshold"]
+if config.calculate_sbert and config.postedition_sbert_threshold:
+    config.calculate_sbert=True
+if config.AutomaticPostedition=="HFPosteditor":
+    from HFPosteditor import *
+    stream2 = open("config-HFPosteditor.yaml", 'r',encoding="utf-8")
+    configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
+    config.HFP_model=configYAML2["model"]
+    config.HFP_sourceLanguage=configYAML2["sourceLanguage"]
+    config.HFP_targetLanguage=configYAML2["targetLanguage"]
+    config.HFP_template=configYAML2["template"]
+    config.HFPosteditor=HFPosteditor()
+    config.HFPosteditor.set_model(config.HFP_model)
+    config.HFPosteditor.set_sourceLanguage(config.HFP_sourceLanguage)
+    config.HFPosteditor.set_targetLanguage(config.HFP_targetLanguage)
+    config.HFPosteditor.set_template(config.HFP_template)
+elif config.AutomaticPostedition=="OllamaPosteditor":
+    from OllamaPosteditor import *
+    stream2 = open("config-OllamaPosteditor.yaml", 'r',encoding="utf-8")
+    configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
+    config.OllamaPosteditor_model=configYAML2["model"]
+    config.OllamaPosteditor_sourceLanguage=configYAML2["sourceLanguage"]
+    config.OllamaPosteditor_targetLanguage=configYAML2["targetLanguage"]
+    config.OllamaPosteditor_role_user=configYAML2["role_user"]
+    config.OllamaPosteditor_role_system=configYAML2["role_system"]
+    config.OllamaPosteditor_role_assistant=configYAML2["role_assistant"]
+    config.OllamaPosteditor_extract_regex=configYAML2["extract_regex"]
+    config.OllamaPosteditor_temperature=configYAML2["temperature"]
+    config.OllamaPosteditor_top_p=configYAML2["top_p"]
+    config.OllamaPosteditor_top_k=configYAML2["top_k"]
+    config.OllamaPosteditor_repeat_penalty=configYAML2["repeat_penalty"]
+    config.OllamaPosteditor_seed=configYAML2["seed"]
+    config.OllamaPosteditor_num_predict=configYAML2["num_predict"]
+    config.OllamaPosteditor_json=configYAML2["json"]
+    
+    config.OllamaPosteditor=OllamaPosteditor()
+    config.OllamaPosteditor.set_model(config.OllamaPosteditor_model)
+    config.OllamaPosteditor.set_sourceLanguage(config.OllamaPosteditor_sourceLanguage)
+    config.OllamaPosteditor.set_targetLanguage(config.OllamaPosteditor_targetLanguage)
+    config.OllamaPosteditor.set_role_user(config.OllamaPosteditor_role_user)
+    config.OllamaPosteditor.set_role_system(config.OllamaPosteditor_role_system)
+    config.OllamaPosteditor.set_role_assistant(config.OllamaPosteditor_role_assistant)
+    
+    config.OllamaPosteditor.set_extract_regex(config.OllamaPosteditor_extract_regex)
+    config.OllamaPosteditor.set_temperature(config.OllamaPosteditor_temperature)
+    config.OllamaPosteditor.set_top_p(config.OllamaPosteditor_top_p)
+    config.OllamaPosteditor.set_top_k(config.OllamaPosteditor_top_k)
+    config.OllamaPosteditor.set_repeat_penalty(config.OllamaPosteditor_repeat_penalty)
+    config.OllamaPosteditor.set_seed(config.OllamaPosteditor_seed)
+    config.OllamaPosteditor.set_num_predict(config.OllamaPosteditor_num_predict)
+    config.OllamaPosteditor.set_json(config.OllamaPosteditor_json)
+    
+    
+
+    
+
+    
+    
+###
 if config.MTUOCServer_MTengine=="Marian":
     stream2 = open("config-Marian.yaml", 'r',encoding="utf-8")
     configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
@@ -225,12 +325,18 @@ if config.MTUOCServer_MTengine=="Marian":
     config.MarianIP=configYAML2["Marian"]["IP"]
     config.MarianPort=configYAML2["Marian"]["port"]
     config.MarianTranslator=MarianTranslator()
+    config.sentencepiece=configYAML2["Preprocess"]["sentencepiece"]
+    config.spmodel=configYAML2["Preprocess"]["spmodel"]
+    if config.sentencepiece:
+        from SentencePieceTokenizer import SentencePieceTokenizer
+        config.sentencepiecetokenizer=SentencePieceTokenizer()
+        config.sentencepiecetokenizer.set_spmodel(config.spmodel)
     if config.startMarianServer:
         MarianTranslator.start_marian_server()
         
     config.MarianTranslator.connect_to_Marian()
 
-elif config.MTUOCServer_MTengine=="OpusMT":
+if config.MTUOCServer_MTengine=="OpusMT":
     stream2 = open("config-OpusMT.yaml", 'r',encoding="utf-8")
     configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
     from transformers import MarianMTModel, MarianTokenizer
@@ -241,7 +347,7 @@ elif config.MTUOCServer_MTengine=="OpusMT":
     config.TransformersTranslator.set_model(config.Transformers_model_path)
     config.Transformers_beam_size=configYAML2["OpusMT"]["beam_size"]
     config.Transformers_num_hypotheses=configYAML2["OpusMT"]["num_hypotheses"]
-    config.multilingual=configYAML2["OpusMT"]["multilingual"]
+    config.multilingual=configYAML2["OpusMT"]["multilingual_prefix"]
     config.TransformersTranslator=TransformersTranslator()
     config.TransformersTranslator.set_model(config.Transformers_model_path)
     config.TransformersTranslator.set_beam_size(config.Transformers_beam_size)
@@ -263,6 +369,44 @@ elif config.MTUOCServer_MTengine=="NLLB":
     config.NLLB_translator.set_num_hypotheses(config.NLLB_num_hypotheses)
     printLOG(1,"Translating with NLLB models",config.NLLB_model)
     
+elif config.MTUOCServer_MTengine=="Ollama":
+
+    stream2 = open("config-OllamaTranslator.yaml", 'r',encoding="utf-8")
+    configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
+    from  OllamaTranslator import *
+    config.ollamaTranslator=OllamaTranslator()
+    
+    config.ollama_model=configYAML2["OllamaTranslator"]["model"]
+    config.ollama_role_user=configYAML2["OllamaTranslator"]["role_user"]
+    config.ollama_extract_regex=configYAML2["OllamaTranslator"]["extract_regex"]
+    config.ollama_role_system=configYAML2["OllamaTranslator"]["role_system"]
+    config.ollama_role_assistant=configYAML2["OllamaTranslator"]["role_assistant"]
+    
+    config.ollama_temperature=configYAML2["OllamaTranslator"]["temperature"]
+    config.ollama_top_p=configYAML2["OllamaTranslator"]["top_p"]      
+    config.ollama_top_k=configYAML2["OllamaTranslator"]["top_k"]       
+    config.ollama_repeat_penalty=configYAML2["OllamaTranslator"]["repeat_penalty"]  
+    config.ollama_seed=configYAML2["OllamaTranslator"]["seed"]         
+    config.ollama_num_predict=configYAML2["Ollama"]["num_predict"]
+    config.ollama_json=configYAML2["OllamaTranslator"]["json"]
+    
+    config.ollamaTranslator.set_model(config.ollama_model)
+    config.ollamaTranslator.set_role_user(config.ollama_role_user)
+    config.ollamaTranslator.set_role_system(config.ollama_role_system)
+    config.ollamaTranslator.set_role_assistant(config.ollama_role_assistant)
+    config.ollamaTranslator.set_extract_regex(config.ollama_extract_regex)
+    config.ollamaTranslator.set_temperature(config.ollama_temperature)
+    config.ollamaTranslator.set_top_p(config.ollama_top_p)
+    config.ollamaTranslator.set_top_k(config.ollama_top_k)
+    config.ollamaTranslator.set_repeat_penalty(config.ollama_repeat_penalty)
+    config.ollamaTranslator.set_seed(config.ollama_seed)
+    config.ollamaTranslator.set_num_predict(config.ollama_num_predict)
+    config.ollamaTranslator.set_json(config.ollama_json)
+    
+
+
+    
+
 elif config.MTUOCServer_MTengine=="ctranslate2":
     stream2 = open("config-ctranslate2.yaml", 'r',encoding="utf-8")
     configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
@@ -285,8 +429,8 @@ elif config.MTUOCServer_MTengine=="ctranslate2":
     config.ctranslate2_translator.set_src_lang(config.ctranslate2_src_lang)
     config.ctranslate2_translator.set_tgt_lang(config.ctranslate2_tgt_lang)
     config.ctranslate2_translator.start_translator()
-    test=config.ctranslate2_translator.translate("Esto es una traducción de prueba")
-    
+    #test=config.ctranslate2_translator.translate("Esto es una traducción de prueba")
+   
 
 elif config.MTUOCServer_MTengine=="Aina":
     
@@ -600,18 +744,18 @@ elif config.MTUOCServer_MTengine=="Aina":
         
     elif model=="es-an":
         aina_repo="projecte-aina/aina-translator-es-an"
-        alignment_repo="aoliverg/MTUOC-Aina-alignment_model-es-arg"
+        alignment_repo="aoliverg/MTUOC-Aina-alignment_model-es-an"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-es"
-        config.AinaTranslator_model_path="./aina-translator-es-arg"
+        config.AinaTranslator_model_path="./aina-translator-es-an"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_arg"
-        GetWordAlignments_fwd_params_file="./aina-translator-es-arg/es-arg.params"
-        GetWordAlignments_fwd_err_file="./aina-translator-es-arg/es-arg.err"
+        GetWordAlignments_fwd_params_file="./aina-translator-es-an/es-an.params"
+        GetWordAlignments_fwd_err_file="./aina-translator-es-an/es-an.err"
 
-        GetWordAlignments_rev_params_file="./aina-translator-es-arg/arg-es.params"
-        GetWordAlignments_rev_err_file="./aina-translator-es-arg/arg-es.err"   
+        GetWordAlignments_rev_params_file="./aina-translator-es-an/an-es.params"
+        GetWordAlignments_rev_err_file="./aina-translator-es-an/an-es.err"   
         truecaser_tokenizer="MTUOC_tokenizer_spa"
-        tcmodel="./aina-translator-es-oc/tc.es"
+        tcmodel="./aina-translator-es-an/tc.es"
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
         config.MTUOCServer_MTengine="NLLB"
@@ -662,11 +806,12 @@ elif config.MTUOCServer_MTengine=="Aina":
             segmenter.set_srx_file(srxfile,config.srxlang)
             config.segmenters.append(segmenter)
     
+    print("Downloading translation model.")
     model_dir = snapshot_download(repo_id=aina_repo, 
                                revision=config.AinaTranslator_revision, 
                                local_dir=config.AinaTranslator_model_path)
                                
-                               
+    print("Downloading alignment model.")                           
     ali_model_dir = snapshot_download(repo_id=alignment_repo, 
                                revision="main", 
                                local_dir=config.AinaTranslator_model_path) 
@@ -674,12 +819,13 @@ elif config.MTUOCServer_MTengine=="Aina":
     
     if not truecaser_repo==None:
         try:
+            print("Downloading truecaser model.")
             truecaser_repo_dir = snapshot_download(repo_id=truecaser_repo, 
                                        revision="main", 
                                        local_dir=config.AinaTranslator_model_path) 
         except:
-            pass
-    
+            print("Error  downloading truecaser model from ",truecaser_repo,sys.exec_info())
+     
     if config.MTUOCServer_MTengine=="Aina":
         config.AinaTranslator_num_hypotheses=configYAML2["Aina"]["num_hypotheses"]
         config.AinaTranslator=AinaTranslator()
@@ -700,6 +846,12 @@ elif config.MTUOCServer_MTengine=="Aina":
             config.NLLB_num_hypotheses=config.AinaTranslator_num_hypotheses
             config.NLLB_src_lang="spa_Latn"
             config.NLLB_tgt_lang="ast_Latn"
+        elif model=="es-an":
+            config.NLLB_model="./aina-translator-es-an"
+            config.NLLB_beam_size=config.AinaTranslator_beam_size
+            config.NLLB_num_hypotheses=config.AinaTranslator_num_hypotheses
+            config.NLLB_src_lang="spa_Latn"
+            config.NLLB_tgt_lang="arg_Latn"
         config.NLLB_translator=NLLBTranslator()
         config.NLLB_translator.set_model(config.NLLB_model,config.NLLB_src_lang,config.NLLB_tgt_lang)
         config.NLLB_translator.set_beam_size(config.NLLB_beam_size)
@@ -807,7 +959,6 @@ elif config.MTUOCServer_MTengine=="SalamandraTA":
     config.truecase="never"
     config.GetWordAlignments_type=None    
     
-
     
 #TRUECASER
 
@@ -822,8 +973,6 @@ if tcmodel=="None":
 if createtruecaser and truecaser.startswith("MTUOC"):
     from MTUOC_truecaser import Truecaser
     config.truecaser=Truecaser(tokenizer=truecaser_tokenizer,tc_model=tcmodel)
-    config.truecase="never"
-    tcmodel="None"
     
 if config.GetWordAlignments_type=="None":
     config.GetWordAlignments_type=None
@@ -846,8 +995,8 @@ if not config.GetWordAlignments_type==None and config.GetWordAlignments_tokenize
 
 if not config.GetWordAlignments_type==None and config.GetWordAlignments_tokenizerSL.startswith("MTUOC"):
     import importlib.util
-    if not config.GetWordAlignments_tokenizerSL.endswith(".py"): config.GetWordAlignments_tokenizerSL=config.GetWordAlignments_tokenizerSL+".py"
-    spec = importlib.util.spec_from_file_location('', config.GetWordAlignments_tokenizerSL)
+    if not config.GetWordAlignments_tokenizerSL.endswith(".py"): config.GetWordAlignments_tokenizeSL=config.GetWordAlignments_tokenizerSL+".py"
+    spec = importlib.util.spec_from_file_location('', config.GetWordAlignments_tokenizeSL)
     tokenizermod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tokenizermod)
     config.GetWordAlignments_tokenizerSL=tokenizermod.Tokenizer()

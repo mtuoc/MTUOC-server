@@ -22,6 +22,7 @@ import time
 import sys
 import config
 import os
+import re
 
 from MTUOC_misc import printLOG
 
@@ -31,6 +32,18 @@ class MarianTranslator():
         self.sl_vocab=None
         self.tl_vocab=None
         self.alternate_translations=[]
+        
+    def lreplace(self, pattern, sub, string):
+        """
+        Replaces 'pattern' in 'string' with 'sub' if 'pattern' starts 'string'.
+        """
+        return re.sub('^%s' % pattern, sub, string)
+
+    def rreplace(self, pattern, sub, string):
+        """
+        Replaces 'pattern' in 'string' with 'sub' if 'pattern' ends 'string'.
+        """
+        return re.sub('%s$' % pattern, sub, string)
         
     
     def set_model(self,model):
@@ -76,6 +89,10 @@ class MarianTranslator():
         tc_aux=translations.split("\n")
         for i in range(0,len(tc_aux)-1):
             segmentaux=tc_aux[i].split(" ||| ")[1].strip()
+            if segmentaux.startswith("<s> "):
+                segmentaux=self.lreplace("<s> ","",segmentaux)
+            if segmentaux.endswith("</s>"):
+                segmentaux=self.rreplace("</s>","",segmentaux)    
             alignmentaux=tc_aux[i].split(" ||| ")[2].strip()
             self.alternate_translation={}
             self.alternate_translation["tgt_tokens"]=segmentaux

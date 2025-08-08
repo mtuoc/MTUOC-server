@@ -1,4 +1,4 @@
-#    MTUOC-test-server
+#    MTUOC-translator
 #    Copyright (C) 2025  Antoni Oliver
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ import tkinter.scrolledtext as scrolledtext
 
 import srx_segmenter
 
-from MTUOC_misc import get_IP_info
+import shutil
 
 
 #IMPORTS FOR YAML
@@ -59,6 +59,133 @@ import xmlrpc.client
 import requests
 
 import socket
+
+from MTUOC_misc import get_IP_info
+from MTUOC_tikal_translate import Tikal
+
+import platform
+
+from MTUOC_cleanDOCX import DocxCleaner
+
+from MTUOC_cleanODT import OdtCleaner
+
+import os
+import shutil
+import zipfile
+from tkinter import messagebox
+from docx import Document
+
+# Función auxiliar para intentar abrir un DOCX
+def is_valid_docx(filepath):
+    try:
+        Document(filepath)
+        return True
+    except Exception:
+        return False
+
+# Función auxiliar para intentar abrir un ODT
+def is_valid_odt(filepath):
+    try:
+        with zipfile.ZipFile(filepath, 'r') as odt_zip:
+            if 'content.xml' in odt_zip.namelist():
+                return True
+            else:
+                return False
+    except Exception:
+        return False
+
+# Función auxiliar para eliminar todo formato de un DOCX y dejar sólo texto plano
+def remove_formatting_docx(input_path, output_path):
+    doc_in = Document(input_path)
+    doc_out = Document()
+    for para in doc_in.paragraphs:
+        doc_out.add_paragraph(para.text)
+    doc_out.save(output_path)
+
+# Función auxiliar para eliminar todo formato de un ODT y dejar sólo texto plano
+def remove_formatting_odt(input_path, output_path):
+    # Método simple: convertir ODT -> TXT plano (si quieres hacer algo más complejo avísame)
+    with zipfile.ZipFile(input_path, 'r') as zin:
+        zin.extract('content.xml', path='.')
+    with open('content.xml', 'r', encoding='utf-8') as f:
+        content = f.read()
+    # Eliminar etiquetas XML
+    import re
+    text = re.sub(r'<[^>]+>', '', content)
+    # Crear nuevo ODT mínimo
+    from odf.opendocument import OpenDocumentText
+    from odf.text import P
+
+    newdoc = OpenDocumentText()
+    p = P(text=text)
+    newdoc.text.addElement(p)
+    newdoc.save(output_path)
+    os.remove('content.xml')
+
+def translate_file():
+    filepath = file_path_entry.get()
+    if not filepath or not os.path.exists(filepath):
+        messagebox.showinfo("Error", "Please select a valid file path.")
+        return
+
+    filedir = os.path.dirname(filepath)
+    filename = os.path.splitext(os.path.basename(filepath))[0]
+    filextension = os.path.splitext(filepath)[1].lower()
+
+    if filextension == ".docx":
+        print("DOCX")
+        shutil.copy(filepath, "tempfile.docx")
+
+        cleaner = DocxCleaner()
+        cleaner.clean_docx("tempfile.docx", "tempfile.clean.docx")
+
+        traductor.translate("tempfile.clean.docx")
+
+        if not is_valid_docx("tempfile.clean.out.docx"):
+            print("Translated DOCX is invalid. Removing formatting and retrying...")
+            remove_formatting_docx("tempfile.docx", "tempfile.nofmt.docx")
+            cleaner.clean_docx("tempfile.nofmt.docx", "tempfile.clean.docx")
+            traductor.translate("tempfile.clean.docx")
+
+        outname = filename + ".out" + filextension
+        outpath = os.path.join(filedir, outname)
+        shutil.copy("tempfile.clean.out.docx", outpath)
+
+        for temp_file in [
+            "tempfile.docx", "tempfile.clean.docx", "tempfile.clean.out.docx", "tempfile.nofmt.docx"
+        ]:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+
+    elif filextension in [".odt", ".odf"]:
+        print("ODT")
+        shutil.copy(filepath, "tempfile.odt")
+
+        cleaner = OdtCleaner()
+        cleaner.clean_odt("tempfile.odt", "tempfile.clean.odt")
+
+        traductor.translate("tempfile.clean.odt")
+
+        if not is_valid_odt("tempfile.clean.out.odt"):
+            print("Translated ODT is invalid. Removing formatting and retrying...")
+            remove_formatting_odt("tempfile.odt", "tempfile.nofmt.odt")
+            cleaner.clean_odt("tempfile.nofmt.odt", "tempfile.clean.odt")
+            traductor.translate("tempfile.clean.odt")
+
+        outname = filename + ".out" + filextension
+        outpath = os.path.join(filedir, outname)
+        shutil.copy("tempfile.clean.out.odt", outpath)
+
+        for temp_file in [
+            "tempfile.odt", "tempfile.clean.odt", "tempfile.clean.out.odt", "tempfile.nofmt.odt"
+        ]:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+
+    else:
+        traductor.translate(filepath)
+
+
 
 def get_local_IP():
     try:
@@ -222,6 +349,17 @@ def translate_test():
     test_text_target.delete(1.0,END)
     test_text_target.insert(1.0,traduccio)
 
+def open_any_file():
+    filepath = askopenfilename(filetypes=[("All files", "*.*")])
+    if not filepath:
+        return
+    file_path_entry.delete(0, END)
+    file_path_entry.insert(0, filepath)
+
+
+        
+
+
 #YAML 
 
 
@@ -237,12 +375,27 @@ try:
 except:
     server_Port="8000"
     server_IP=get_IP_info()
-    server_type="MTUOC"
+    server_type="ModernMT"
     
+traductor=Tikal()
+traductor.set_path("./okapi-linux/tikal.sh")
+traductor.set_sl(source_lang)
+traductor.set_tl(target_lang)
+traductor.set_srx_file("segment-ast.srx")
+#traductor.set_okf("okf_openxml")
+traductor.set_ip(server_IP)
+traductor.set_port(server_Port)
+os_name = platform.system()
+print("Operating System:", os_name)
+if os_name=="Linux":
+    traductor.set_path("tikalLinux.sh")
+if os_name=="Windows":
+    traductor.set_path("tikalWin.bat")
+
 
 ###GRAPHICAL INTERFACE
 main_window = Tk()
-main_window.title("MTUOC test server v. 2504")
+main_window.title("MTUOC Translator v. 2504")
 
 
 
@@ -281,12 +434,27 @@ server_info_showIP_E.insert(0,server_IP)
 server_info_showPort_E.insert(0,server_Port)
 server_info_showType_E.insert(0,server_type)
 
+#FILE FRAME 
+file_frame = Frame(notebook)
+
+
+
+
+file_button = Button(file_frame, text="Select File", command=open_any_file, width=15)
+file_button.grid(row=0, column=0, padx=5, pady=5)
+
+file_path_entry = Entry(file_frame, width=80)
+file_path_entry.grid(row=0, column=1, padx=5, pady=5)
+
+
+translate_button = Button(file_frame, text="Translate", command=translate_file, width=15)
+translate_button.grid(row=1, column=0, padx=5, pady=5)
+
 
 server_info
 notebook.add(server_info, text="Server", padding=30)
 notebook.add(test_frame, text="TEST", padding=30)
-
-
+notebook.add(file_frame, text="File", padding=30)
 
 notebook.pack()
 notebook.pack_propagate(0) #Don't allow the widgets inside to determine the frame's width / height

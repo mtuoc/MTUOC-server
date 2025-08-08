@@ -3,7 +3,8 @@ from sentence_transformers import SentenceTransformer, util
 
 class sbertScorer():
     def __init__(self):
-        self.model= None
+        self.model=None
+        
     def set_model(self,model="LaBSE"):
         self.model = SentenceTransformer(model)
     
