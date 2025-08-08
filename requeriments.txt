@@ -1,0 +1,12 @@
+pyyaml
+regex
+ftfy
+lxml
+transformers
+torch
+sentencepiece
+sacremoses
+flask
+waitress
+websocket
+websocket-client

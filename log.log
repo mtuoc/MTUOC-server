@@ -293,3 +293,29 @@ MTUOC server type:	MTUOC
 2024-11-08 19:23:23.672700	SEGMENT:	This is a simple test.
 2024-11-08 19:23:24.059349	TRANSLATION SEGMENT:	Esta es una simple prueba.
 2024-11-08 19:23:24.059411	TRANSLATION PARA:	Esta es una simple prueba.
+2025-08-08 10:09:12.915963	Translating with OpusMT models	Helsinki-NLP/opus-mt-en-es
+2025-08-08 10:09:52.170470	Translating with OpusMT models	Helsinki-NLP/opus-mt-en-es
+2025-08-08 10:09:52.253092	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 10:10:15.215039	Translating with OpusMT models	Helsinki-NLP/opus-mt-en-es
+2025-08-08 10:10:15.281531	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 10:11:44.920718	Translating with OpusMT models	Helsinki-NLP/opus-mt-en-es
+2025-08-08 10:11:44.986827	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 10:12:09.638170	PARAGRAPH:	This is a test translation.
+
+2025-08-08 10:12:09.662665	SEGMENT:	This is a test translation.
+2025-08-08 10:12:10.136290	TRANSLATION SEGMENT:	Esta es una traducción de prueba.
+2025-08-08 10:12:10.136399	TRANSLATION PARA:	Esta es una traducción de prueba.
+2025-08-08 10:29:16.123606	PARAGRAPH:	This is a test.
+
+2025-08-08 10:29:16.124729	SEGMENT:	This is a test.
+2025-08-08 10:29:16.427808	TRANSLATION SEGMENT:	Esto es una prueba.
+2025-08-08 10:29:16.427922	TRANSLATION PARA:	Esto es una prueba.

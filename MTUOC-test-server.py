@@ -231,8 +231,6 @@ try:
     server_Port=config['MTUOCServer']['port']
     server_IP=get_IP_info()
     server_type=config['MTUOCServer']['type']
-    source_lang=config['MTUOCServer']['source']
-    target_lang=config['MTUOCServer']['target']
     srxfile=config["Preprocess"]["srxfiles"].split(",")[0]
 except:
     server_Port="8000"
