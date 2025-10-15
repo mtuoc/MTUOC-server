@@ -115,6 +115,7 @@ Transformers_num_hypotheses=1
 
 #NLLB
 NLLB_model=None
+NLLB_device="cpu"
 NLLB_beam_size=1
 NLLB_num_hypotheses=1
 NLLB_src_lang=None

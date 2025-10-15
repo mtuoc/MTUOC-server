@@ -23,7 +23,7 @@ class NLLBTranslator:
     def __init__(self):
         self.model=None
         self.tokenizer=None
-        self.device=device = torch.cuda.current_device() if torch.cuda.is_available() else -1
+        self.device="cpu"
         self.multilingual=False
         self.src_lang=None
         self.tgt_lang=None
@@ -41,6 +41,14 @@ class NLLBTranslator:
                 self.llista.remove(item) 
         return(self.llista)
 
+    def set_device(self,device):
+        if device=="auto":
+            self.device=device = torch.cuda.current_device() if torch.cuda.is_available() else -1
+        elif device=="cpu":
+            self.devide="cpu"
+        elif device=="gpu":
+            self.devide="gpu" 
+        
     def set_model(self,model_name, src_lang, tgt_lang):
         self.src_lang=src_lang
         self.tgt_lang=tgt_lang
