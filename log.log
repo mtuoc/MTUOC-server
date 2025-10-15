@@ -319,3 +319,63 @@ MTUOC server type:	MTUOC
 2025-08-08 10:29:16.124729	SEGMENT:	This is a test.
 2025-08-08 10:29:16.427808	TRANSLATION SEGMENT:	Esto es una prueba.
 2025-08-08 10:29:16.427922	TRANSLATION PARA:	Esto es una prueba.
+2025-08-08 11:31:43.666203	START MT ENGINE:	./marian-server-GPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 11:31:43.667272	CONNECT TO MARIAN.	
+2025-08-08 11:31:43.669524	Error: waiting for Marian server to start. Retrying in 2 seconds.	(<class 'ConnectionRefusedError'>, ConnectionRefusedError(111, 'Connection refused'), <traceback object at 0x7f28ce974400>)
+2025-08-08 11:31:45.670218	Error: waiting for Marian server to start. Retrying in 2 seconds.	(<class 'ConnectionRefusedError'>, ConnectionRefusedError(111, 'Connection refused'), <traceback object at 0x7f28ce974940>)
+2025-08-08 11:31:47.671160	Connection with Marian Server created	
+2025-08-08 11:31:47.903904	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 11:31:52.323791	PARAGRAPH:	Esta es una prueba de traducción.
+
+2025-08-08 11:31:52.332990	SEGMENT:	Esta es una prueba de traducción.
+2025-08-08 11:31:52.394038	TRANSLATION SEGMENT:	This is a translation test.
+2025-08-08 11:31:52.394179	TRANSLATION PARA:	This is a translation test.
+2025-08-08 11:33:34.412310	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 11:33:34.413379	CONNECT TO MARIAN.	
+2025-08-08 11:33:34.416224	Connection with Marian Server created	
+2025-08-08 11:33:34.544183	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 11:34:13.591992	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 11:34:13.595740	CONNECT TO MARIAN.	
+2025-08-08 11:34:13.599245	Connection with Marian Server created	
+2025-08-08 11:34:13.777350	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 11:34:22.269058	PARAGRAPH:	Esta es una prueba de traducción.
+
+2025-08-08 11:34:22.281518	SEGMENT:	Esta es una prueba de traducción.
+2025-08-08 11:34:22.301791	TRANSLATION SEGMENT:	This is a translation test.
+2025-08-08 11:34:22.301938	TRANSLATION PARA:	This is a translation test.
+2025-08-08 11:34:34.646394	PARAGRAPH:	Esta es una prueba de traducción automática.
+
+2025-08-08 11:34:34.646746	SEGMENT:	Esta es una prueba de traducción automática.
+2025-08-08 11:34:34.664033	TRANSLATION SEGMENT:	This is an automatic translation test.
+2025-08-08 11:34:34.664206	TRANSLATION PARA:	This is an automatic translation test.
+2025-08-08 12:05:19.339416	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 12:06:51.433944	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 12:07:51.535626	START MT ENGINE:	marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 12:11:23.465491	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 12:11:37.166120	START MT ENGINE:	./marian-server-CPU -m ./marian-model-eng-spa/model.bin -v ./marian-model-eng-spa/vocab-es.yml ./marian-model-eng-spa/vocab-en.yml -p 8270 --n-best --alignment hard --normalize 1 -b 20 --word-penalty 10 --max-length-factor 1.24 --quiet &
+2025-08-08 12:11:37.167197	CONNECT TO MARIAN.	
+2025-08-08 12:11:37.198303	Error: waiting for Marian server to start. Retrying in 2 seconds.	(<class 'ConnectionRefusedError'>, ConnectionRefusedError(111, 'Connection refused'), <traceback object at 0x7f69b5c11e80>)
+2025-08-08 12:11:39.208474	Connection with Marian Server created	
+2025-08-08 12:11:39.645973	2	MTUOC server started using MTUOC protocol
+MTUOC server IP:	192.168.1.51
+MTUOC server port:	8010
+MTUOC server type:	MTUOC
+2025-08-08 12:11:59.325086	PARAGRAPH:	Esta es una prueba de traducción automática.
+
+2025-08-08 12:11:59.354558	SEGMENT:	Esta es una prueba de traducción automática.
+2025-08-08 12:11:59.822655	TRANSLATION SEGMENT:	This is an automatic translation test.
+2025-08-08 12:11:59.822792	TRANSLATION PARA:	This is an automatic translation test.
+2025-08-08 12:12:05.869135	PARAGRAPH:	Esta es una prueba de traducción automática.
+
+2025-08-08 12:12:05.869473	SEGMENT:	Esta es una prueba de traducción automática.
+2025-08-08 12:12:06.079361	TRANSLATION SEGMENT:	This is an automatic translation test.
+2025-08-08 12:12:06.079470	TRANSLATION PARA:	This is an automatic translation test.

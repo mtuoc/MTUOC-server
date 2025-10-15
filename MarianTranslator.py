@@ -16,13 +16,14 @@
 
 
 
-import websocket
 import socket
 import time
 import sys
 import config
 import os
 import re
+import subprocess
+import platform
 
 from MTUOC_misc import printLOG
 
@@ -57,7 +58,11 @@ class MarianTranslator():
         
     def start_marian_server():
         printLOG(1, "START MT ENGINE:", config.startMarianCommand)
-        os.system(config.startMarianCommand)
+        
+        if platform.system() == "Windows":
+            subprocess.Popen(config.startMarianCommand) 
+        else:
+            os.system(config.startMarianCommand)
 
 
     def connect_to_Marian(self):
