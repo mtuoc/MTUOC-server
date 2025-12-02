@@ -1,7 +1,0 @@
-OpusMT:
-#use the same configuration for OpusMT
-  #model_path: OpusMT-FT-ATLS-spa-eng
-  model_path: Helsinki-NLP/opus-mt-en-es
-  beam_size: 5
-  num_hypotheses: 5
-  multilingual_prefix: ""

@@ -1,8 +1,0 @@
-NLLB:
-  model: facebook/nllb-200-distilled-600M
-  #model: ./NLLB-FT-model
-  src_lang: spa_Latn
-  tgt_lang: rus_Cyrl
-  device: cpu
-  beam_size: 5
-  num_hypotheses: 5

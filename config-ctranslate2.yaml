@@ -1,9 +1,0 @@
-ctranslate2:
-  translation_model: ./ct2model-EP-20250605-spa-cat/ct2_model
-  SL_spmodel: ./ct2model-EP-20250605-spa-cat/spmodel.model
-  TL_spmodel: ./ct2model-EP-20250605-spa-cat/spmodel.model
-  src_lang: ""
-  tgt_lang: ""
-  beam_size: 5
-  num_hypotheses: 5
-  device: cuda

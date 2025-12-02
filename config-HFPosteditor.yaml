@@ -1,4 +1,0 @@
-model: "BSC-LT/salamandraTA-2b-instruct"
-sourceLanguage: English
-targetLanguage: Spanish
-template: "Please fix any mistakes in the following {source}-{target} machine translation or keep it unedited if it's correct.\nSource: {source_sentence} \nMT: {machine_translation} \nCorrected:"
