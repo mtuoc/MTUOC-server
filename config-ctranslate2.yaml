@@ -1,0 +1,9 @@
+ctranslate2:
+  translation_model: ./ctranslate2-EP-202509/
+  SL_spmodel: ./ctranslate2-EP-202509/spmodel.model
+  TL_spmodel: ./ctranslate2-EP-202509/spmodel.model
+  src_lang: ""
+  tgt_lang: ""
+  beam_size: 5
+  num_hypotheses: 5
+  device: cuda

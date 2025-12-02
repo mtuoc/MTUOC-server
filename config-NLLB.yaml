@@ -1,0 +1,8 @@
+NLLB:
+  model: facebook/nllb-200-distilled-600M
+  #model: ./NLLB-FT-model
+  src_lang: spa_Latn
+  tgt_lang: ast_Latn
+  device: gpu
+  beam_size: 5
+  num_hypotheses: 5

@@ -1,0 +1,12 @@
+DeepL:
+  API_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  sllang: CA
+  tllang: EN-GB 
+  #EN-GB
+  #tag_handling: html
+  #one of html, xml
+  formality: default
+  #one of default, less, more
+  split_sentences: "off"
+  #one of "off", "on", "nonewlines"
+  glossary: None

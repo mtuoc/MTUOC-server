@@ -1,0 +1,8 @@
+GoogleTranslate:
+  sllang: ca
+  tllang: en
+  glossary: None
+  #state None if no glossary is used, otherwise the name of the glossary
+  project_id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  location: us-central1
+  jsonfile: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

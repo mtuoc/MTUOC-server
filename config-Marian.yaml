@@ -1,0 +1,34 @@
+Marian:
+  startMarianServer: True
+  #Linux
+  startMarianCommand: "./marian-server-CPU -m ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/modelFT272.bin -v ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt -p 8260 --n-best true --beam-size 12 --normalize 1.0 --word-penalty 0 --quiet &"
+  #Windows
+  startMarianCommandWindows: "marian-server.exe -m ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/modelFT256.bin -v ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt -p 8260 --n-best true --beam-size 12 --normalize 1.0 --word-penalty 0 --quiet"
+  #Mac
+  startMarianCommandMac: "./marian-server-Mac -m ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/modelFT272.bin -v ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/shared.vocab.txt -p 8260 --n-best true --beam-size 12 --normalize 1.0 --word-penalty 0 --quiet &"
+  IP: localhost
+  port: 8260
+
+Preprocess:
+  sentencepiece: True
+  spmodel: ./MTUOC-EinaCAT-72-Philosophy-202511-cat-eng/spmodel.model
+  prefix: ""
+  
+Reranking:
+  model: None
+  #distiluse-base-multilingual-cased-v2
+  
+  #one of:
+  # None
+  # LaBSE
+  # paraphrase-multilingual-mpnet-base-v2
+  # paraphrase-multilingual-MiniLM-L12-v2
+  # distiluse-base-multilingual-cased-v2
+  source_language: ca
+  source_tokenizer: MTUOC_tokenizer_cat
+  glossary_file: None
+  glossary_separator: ":" 
+  marian_weight: 1
+  sbert_weight: 0
+  glossary_weight: 0
+  neologism_weight: 0
