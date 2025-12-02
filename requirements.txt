@@ -1,0 +1,16 @@
+pyyaml
+regex
+ftfy
+huggingface_hug
+lxml
+sentencepiece
+websocket_client
+flask
+waitress
+transformers
+torch
+sacremoses
+ctranslate2
+pyonmttok
+ollama
+
