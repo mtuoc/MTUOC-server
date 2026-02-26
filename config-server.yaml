@@ -1,4 +1,4 @@
-MTengine: DeepL
+MTengine: OpusMT
 #MTUOC, OpusMT, NLLB, HuggingFace, Ollama, GoogleT, DeepL
 system_name: MTUOC-OpusMT-eng-spa
 
@@ -33,7 +33,7 @@ Preprocess:
   #one of always, never, upper
   truecaser: MTUOC
   #one of MTUOC, Moses
-  truecaser_tokenizer: MTUOC_tokenizer_eng
+  truecaser_tokenizer: None
   #one of None, MTUOC_tokenizer_xxx, Moses
   tcmodel: None
   MosesTokenizerLang: en    
