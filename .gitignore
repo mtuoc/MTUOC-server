@@ -1,3 +1,5 @@
 marian-server-CPU
 marian-server-GPU
-__pycache__
+__pycache__/
+*.pyc
+.env

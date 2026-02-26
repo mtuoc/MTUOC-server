@@ -26,7 +26,7 @@ Preprocess:
   max_segment_chars: 1000
   checkistranslatable: True
   tokenize: False
-  tokenizer: MTUOC_tokenizer_eng
+  tokenizer: None
   #one of None, MTUOC_tokenizer_xxx, Moses
   MosesTokenizerLang: es
   truecase: never
@@ -78,9 +78,9 @@ AutomaticPostedition:
 GetWordAlignments:
   type: None
   #one of None, fast_align
-  tokenizerSL: MTUOC_tokenizer_eng
+  tokenizerSL: None
   #one of None, MTUOC_tokenizer_xxx, Moses
-  tokenizerTL: MTUOC_tokenizer_spa
+  tokenizerTL: None
   #one of None, MTUOC_tokenizer_xxx, Moses
   tokenizerSLcode: en
   tokenizerTLcode: es
