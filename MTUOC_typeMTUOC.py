@@ -71,7 +71,7 @@ def start_MTUOC_server():
                 printLOG(2,"translateMTUOC jsonobject:", jsonobjecttoreturn,timestamp=False)
                 return jsonobjecttoreturn
             except:
-                print("ERROR:",sys.exc_info())
+                print("ERROR MTUOC_typeMTUOC:",sys.exc_info())
                 return make_response("Server Error", 500)
         
         from waitress import serve
@@ -79,10 +79,10 @@ def start_MTUOC_server():
         #app.run(debug=debug, host=host, port=port, use_reloader=False,threaded=True)
     url_root="/"
     ip="0.0.0.0"
-    ip=get_IP_info()
+    ipLOG=get_IP_info()
     debug="store_true"
     
-    printLOG(1,"MTUOC server IP:", ip,timestamp=False)
+    printLOG(1,"MTUOC server IP:", ipLOG,timestamp=False)
     printLOG(1,"MTUOC server port:", config.MTUOCServer_port,timestamp=False)
     printLOG(1,"MTUOC server type:", "MTUOC",timestamp=False)
     

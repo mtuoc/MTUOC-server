@@ -1,7 +1,7 @@
 DeepL:
-  API_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  sllang: CA
-  tllang: EN-GB 
+  API_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  sllang: en
+  tllang: es 
   #EN-GB
   #tag_handling: html
   #one of html, xml

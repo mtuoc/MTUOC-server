@@ -1,36 +1,32 @@
-OllamaTranslator:
-    model: hdnh2006/salamandra-7b-instruct
-    role_user: "Translate the following text from Catalan into English.\nCatalan: {SLsegment} \nEnglish: "
-    #should include {SLsegment}
-    role_system: "" 
-    #"Return only the translated sentence, without explanations, notes, or formatting. Do not include quotation marks."
-    role_assistant: ""
+# --- OLLAMA SERVER & MODEL SETTINGS ---
+ollama_settings:
+  model: "mistral"                   # Name of the model to use (e.g., llama3, mistral, gemma)
+  host: "http://localhost:11434"    # URL where the Ollama server is running
+  timeout: 5                         # Connection timeout in seconds
 
-    extract_regex: None
-    role: "user"
+# --- LLM GENERATION PARAMETERS (Ollama Options) ---
+# These parameters control the behavior of the text generation process
+generation_params:
+  temperature: 0.0      # 0.0 is deterministic (greedy). Higher values (up to 1.0) are more creative
+  num_predict: 128      # Maximum number of tokens to generate (-1 for infinite)
+  num_ctx: 2048         # Size of the context window (model memory)
+  repeat_penalty: 1.2   # Penalty to prevent the model from repeating the same tokens
+  top_k: 40             # Limits the next token selection to the top K most likely tokens
+  top_p: 0.9            # Nucleus sampling: filters tokens by cumulative probability
+  seed: 42              # Set a seed for reproducible results
+  stop: ["\n", "###"]   # List of sequences that will stop the generation process
 
-    temperature: 0.0  
-    top_p: 1.0        
-    top_k: 40        
-    repeat_penalty: 1.1  
-    seed: 42          
-    num_predict: 256  
-    json: False
-
-
-
-# temperature: controls randomness. 0.0 = predictable, 1.0 = creative.
-# top_p: limits to top tokens with cumulative probability p (e.g., 0.9 = 90% most likely tokens).
-# top_k: limits to the top-k most likely tokens (e.g., 40 = choose from 40 best options).
-# repeat_penalty: discourages repetition. Values > 1.0 reduce repeated phrases.
-# seed: sets a fixed seed for reproducible outputs (e.g., 42). Leave blank for random.
-# num_predict: maximum number of tokens to generate. -1 means unlimited (until model stops).
-
-# Default values depens on the model, but usually are the following:
-
-#temperature: 0.9  
-#top_p: 0.9        
-#top_k: 40         
-#repeat_penalty: 1.1  
-#seed: None #means random
-#num_predict: -1 
+# --- LLM PROMPT AND RESPONSE PARSING ---
+prompt_settings:
+  # The template uses {P[0]}, {P[1]}, etc., corresponding to the input file columns
+  prompt_template: |
+    Translate the following text from English into Catalan. Provide only the translation.
+    English: {SLsegment}
+    Catalan: 
+  
+  # If the model returns a JSON string, specify the key to extract. Use "None" otherwise.
+  json_key: "None"
+  
+  # Regular expression to clean the output (e.g., taking only the first line)
+  # '^(.+?)(?=\\n|\n|$)' extracts everything until the first newline
+  regex_pattern: '^(.+?)(?=\\n|\n|$)'

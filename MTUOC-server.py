@@ -27,12 +27,19 @@ import config
 import codecs
 import os
 import platform
+from pathlib import Path
 
 
 from MTUOC_misc import printLOG
 from MTUOC_misc import get_IP_info
 from MTUOC_Preprocessor import Preprocessor
 from MTUOC_Postprocessor import Postprocessor
+from MTUOC_download_models import download_aina_model
+
+import requests
+import stat
+
+import shutil
 
 
 if len(sys.argv)>1:
@@ -168,7 +175,7 @@ if config.use_MosesPunctNormalizer:
 tokenize=configYAML["Preprocess"]["tokenize"]
 tokenizer=configYAML["Preprocess"]["tokenizer"]
 MosesTokenizerLang=configYAML["Preprocess"]["MosesTokenizerLang"]
-
+'''
 if tokenize and tokenizer=="Moses":
     from sacremoses import MosesTokenizer, MosesDetokenizer
     config.tokenizerSL=MosesTokenizer(lang=MosesTokenizerLang)
@@ -180,7 +187,7 @@ if tokenizer.startswith("MTUOC"):
     tokenizermod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tokenizermod)
     config.tokenizerSL=tokenizermod.Tokenizer()
-
+'''
 config.truecase=configYAML["Preprocess"]["truecase"]
 truecaser=configYAML["Preprocess"]["truecaser"]
 truecaser_tokenizer=configYAML["Preprocess"]["truecaser_tokenizer"]
@@ -362,9 +369,66 @@ if config.MTUOCServer_MTengine=="Marian":
     if platform.system()=="Windows":
         config.startMarianCommandWindows=configYAML2["Marian"]["startMarianCommandWindows"]
         config.startMarianCommand=config.startMarianCommandWindows
-    if platform.system()=="Darwin":
+        url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/marian-server.exe'
+        nom_fitxer = 'marian-server.exe'
+        ruta_fitxer = Path(nom_fitxer)
+        if not ruta_fitxer.exists():
+            try:
+                resposta = requests.get(url, stream=True)
+                resposta.raise_for_status()
+                with open(ruta_fitxer, 'wb') as fitxer:
+                    for chunk in resposta.iter_content(chunk_size=8192):
+                        if chunk:
+                            fitxer.write(chunk)
+            except requests.exceptions.RequestException as e:
+                printLOG(1," Error downloading marian-server.exe: {e}")
+            
+        
+        
+        
+    elif platform.system()=="Darwin":
         config.startMarianCommandMac=configYAML2["Marian"]["startMarianCommandMac"]
         config.startMarianCommand=config.startMarianCommandMac
+        url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/marian-server-MAC'
+        nom_fitxer = 'marian-server-MAC'
+        ruta_fitxer = Path(nom_fitxer)
+        if not ruta_fitxer.exists():
+            try:
+                resposta = requests.get(url, stream=True)
+                resposta.raise_for_status()
+                with open(ruta_fitxer, 'wb') as fitxer:
+                    for chunk in resposta.iter_content(chunk_size=8192):
+                        if chunk:
+                            fitxer.write(chunk)
+                st = os.stat(ruta_fitxer)
+                os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            except requests.exceptions.RequestException as e:
+                printLOG(1," Error downloading marian-server-MAC: {e}")
+            except OSError as e:
+                printLOG(1, "Error changing permissions to marian-server-MAC: {e}")
+        
+        
+        
+        
+    else:
+        url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/marian-server-CPU'
+        nom_fitxer = 'marian-server-CPU'
+        ruta_fitxer = Path(nom_fitxer)
+        if not ruta_fitxer.exists():
+            try:
+                resposta = requests.get(url, stream=True)
+                resposta.raise_for_status()
+                with open(ruta_fitxer, 'wb') as fitxer:
+                    for chunk in resposta.iter_content(chunk_size=8192):
+                        if chunk:
+                            fitxer.write(chunk)
+                st = os.stat(ruta_fitxer)
+                os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            except requests.exceptions.RequestException as e:
+                printLOG(1," Error downloading marian-server-CPU: {e}")
+            except OSError as e:
+                printLOG(1, "Error changing permissions to marian-server-CPU: {e}")
+        
     config.MarianIP=configYAML2["Marian"]["IP"]
     config.MarianPort=configYAML2["Marian"]["port"]
     config.MarianTranslator=MarianTranslator()
@@ -441,7 +505,7 @@ elif config.MTUOCServer_MTengine=="NLLB":
     printLOG(1,"Translating with NLLB models",config.NLLB_model)
     
 elif config.MTUOCServer_MTengine=="Ollama":
-
+    '''
     stream2 = open("config-OllamaTranslator.yaml", 'r',encoding="utf-8")
     configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
     from  OllamaTranslator import *
@@ -473,8 +537,42 @@ elif config.MTUOCServer_MTengine=="Ollama":
     config.ollamaTranslator.set_seed(config.ollama_seed)
     config.ollamaTranslator.set_num_predict(config.ollama_num_predict)
     config.ollamaTranslator.set_json(config.ollama_json)
+    '''
+    from  OllamaTranslator import *
+    config.ollamaTranslator=OllamaTranslator(config_path="config-OllamaTranslator.yaml")
     
 
+elif config.MTUOCServer_MTengine=="HuggingFace":
+    '''
+    stream2 = open("config-HFTranslator.yaml", 'r',encoding="utf-8")
+    configYAML2=yaml.load(stream2, Loader=yaml.FullLoader)
+    from  HFTranslator import *
+    config.HFTranslator=HFTranslator()
+    config.HFTranslator_model=configYAML2["HFTranslator"]["model"]
+    config.HFTranslator_template=configYAML2["HFTranslator"]["template"]
+    config.HFTranslator_extract_regex=configYAML2["HFTranslator"]["extract_regex"]
+    config.HFTranslator_json=configYAML2["HFTranslator"]["json"]
+    config.HFTranslator.set_model(config.HFTranslator_model)
+    config.HFTranslator.set_template(config.HFTranslator_template)
+    config.HFTranslator.set_extract_regex(config.HFTranslator_extract_regex)
+    config.HFTranslator.set_json(config.HFTranslator_json)
+    
+    config.HFTranslator.set_gen_params(configYAML2['generation_params'])
+    
+    device_map=configYAML2["HFTranslator"]["device_map"]
+    trust_remote_code=configYAML2["HFTranslator"]["trust_remote_code"]
+    
+    max_new_tokens=configYAML2["generation_params"]["max_new_tokens"]
+    do_sample=configYAML2["generation_params"]["do_sample"]
+    temperature=configYAML2["generation_params"]["temperature"]
+    top_p=configYAML2["generation_params"]["top_p"]
+    repetition_penalty=configYAML2["generation_params"]["repetition_penalty"]
+    no_repeat_ngram_size=configYAML2["generation_params"]["no_repeat_ngram_size"]
+    num_beams=configYAML2["generation_params"]["num_beams"]
+    early_stopping=configYAML2["generation_params"]["early_stopping"]
+    '''
+    from  HFTranslator import *
+    config.HFTranslator=HFTranslator(config_path="config-HFTranslator.yaml")
 
     
 
@@ -545,6 +643,10 @@ elif config.MTUOCServer_MTengine=="Aina":
         aina_repo="projecte-aina/aina-translator-ca-en"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-en"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
+        config.AinaTranslator_model_path="aina-translator-ca-en"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-en/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-en/MTUOC_tokenizer_eng.py", "MTUOC_tokenizer_eng.py")
         config.AinaTranslator_model_path="./aina-translator-ca-en"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_eng"
@@ -557,43 +659,59 @@ elif config.MTUOCServer_MTengine=="Aina":
         tcmodel="./aina-translator-ca-en/tc.ca"
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan"
+        config.truecase="upper"
+        config.restoretags=True
     elif model=="en-ca":
         aina_repo="projecte-aina/aina-translator-en-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-en"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-en"
+        config.AinaTranslator_model_path="aina-translator-en-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-en-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-en-ca/MTUOC_tokenizer_eng.py", "MTUOC_tokenizer_eng.py")
         config.AinaTranslator_model_path="./aina-translator-en-ca"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_eng"
-        config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
+        config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"     
         GetWordAlignments_fwd_params_file="./aina-translator-en-ca/en-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-en-ca/en-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-en-ca/ca-en.params"
         GetWordAlignments_rev_err_file="./aina-translator-en-ca/ca-en.err"
         truecaser_tokenizer="MTUOC_tokenizer_eng"
         tcmodel="./aina-translator-en-ca/tc.en"
         config.srxfiles=["segment.srx"]
         config.srxlang="English"
+        config.truecase="upper"
+        config.restoretags=True
     if model=="ca-de":
         aina_repo="projecte-aina/aina-translator-ca-de"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-de"
-        truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-de"
+        truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
+        config.AinaTranslator_model_path="aina-translator-ca-de"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-de/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-de/MTUOC_tokenizer_deu.py", "MTUOC_tokenizer_deu.py")
         config.AinaTranslator_model_path="./aina-translator-ca-de"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_deu"
         GetWordAlignments_fwd_params_file="./aina-translator-ca-de/ca-de.params"
         GetWordAlignments_fwd_err_file="./aina-translator-ca-de/ca-de.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-ca-de/de-ca.params"
         GetWordAlignments_rev_err_file="./aina-translator-ca-de/de-ca.err"
         truecaser_tokenizer="MTUOC_tokenizer_cat"
-        tcmodel="./aina-translator-ca-de/tc.de"    
+        tcmodel="./aina-translator-ca-de/tc.ca"    
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="de-ca":
         aina_repo="projecte-aina/aina-translator-de-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-de"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-de"
+        config.AinaTranslator_model_path="aina-translator-de-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-de-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-de-ca/MTUOC_tokenizer_deu.py", "MTUOC_tokenizer_deu.py")
         config.AinaTranslator_model_path="./aina-translator-de-ca"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_deu"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
@@ -606,131 +724,167 @@ elif config.MTUOCServer_MTengine=="Aina":
         tcmodel="./aina-translator-de-ca/tc.de"
         config.srxfiles=["segment.srx"]
         config.srxlang="German"
+        config.truecase="upper"
+        config.restoretags=True
         
     if model=="ca-es":
         aina_repo="projecte-aina/aina-translator-ca-es"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-es"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
+        config.AinaTranslator_model_path="aina-translator-ca-es"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-es/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-es/MTUOC_tokenizer_spa.py", "MTUOC_tokenizer_spa.py") 
         config.AinaTranslator_model_path="./aina-translator-ca-es"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_spa"
         GetWordAlignments_fwd_params_file="./aina-translator-ca-es/ca-es.params"
         GetWordAlignments_fwd_err_file="./aina-translator-ca-es/ca-es.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-ca-es/es-ca.params"
         GetWordAlignments_rev_err_file="./aina-translator-ca-es/es-ca.err"
         truecaser_tokenizer="MTUOC_tokenizer_cat"
         tcmodel="./aina-translator-ca-es/tc.ca"   
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan" 
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="es-ca":
         aina_repo="projecte-aina/aina-translator-es-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-es"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-es"
+        config.AinaTranslator_model_path="aina-translator-es-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-es-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-es-ca/MTUOC_tokenizer_spa.py", "MTUOC_tokenizer_spa.py") 
         config.AinaTranslator_model_path="./aina-translator-es-ca"
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-es-ca/es-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-es-ca/es-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-es-ca/ca-es.params"
         GetWordAlignments_rev_err_file="./aina-translator-es-ca/ca-es.err"
         truecaser_tokenizer="MTUOC_tokenizer_spa"
         tcmodel="./aina-translator-es-ca/tc.es"
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
+        config.srxlang="Catalan" 
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="ca-pt":
         aina_repo="projecte-aina/aina-translator-ca-pt"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-pt"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
         config.AinaTranslator_model_path="./aina-translator-ca-pt"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-pt/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-pt/MTUOC_tokenizer_por.py", "MTUOC_tokenizer_por.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_por"
         GetWordAlignments_fwd_params_file="./aina-translator-ca-pt/ca-pt.params"
         GetWordAlignments_fwd_err_file="./aina-translator-ca-pt/ca-pt.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-ca-pt/pt-ca.params"
         GetWordAlignments_rev_err_file="./aina-translator-ca-pt/pt-ca.err"
         truecaser_tokenizer="MTUOC_tokenizer_cat"
         tcmodel="./aina-translator-ca-pt/tc.ca"
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan"
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="pt-ca":
         aina_repo="projecte-aina/aina-translator-pt-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-pt"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-pt"
         config.AinaTranslator_model_path="./aina-translator-pt-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-pt/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-pt/MTUOC_tokenizer_por.py", "MTUOC_tokenizer_por.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_por"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-pt-ca/pt-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-pt-ca/pt-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-pt-ca/ca-pt.params"
         GetWordAlignments_rev_err_file="./aina-translator-pt-ca/ca-pt.err"   
         truecaser_tokenizer="MTUOC_tokenizer_por"
         tcmodel="./aina-translator-pt-ca/tc.pt"
         config.srxfiles=["segment.srx"]
         config.srxlang="Portuguese"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="ca-it":
         aina_repo="projecte-aina/aina-translator-ca-it"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-it"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
         config.AinaTranslator_model_path="./aina-translator-ca-it"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-it/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-it/MTUOC_tokenizer_ita.py", "MTUOC_tokenizer_ita.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_ita"
         GetWordAlignments_fwd_params_file="./aina-translator-ca-it/ca-it.params"
         GetWordAlignments_fwd_err_file="./aina-translator-ca-it/ca-it.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-ca-it/it-ca.params"
         GetWordAlignments_rev_err_file="./aina-translator-ca-it/it-ca.err"
         truecaser_tokenizer="MTUOC_tokenizer_cat"
         tcmodel="./aina-translator-ca-it/tc.ca"
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan"
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="it-ca":
         aina_repo="projecte-aina/aina-translator-it-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-it"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-it"
         config.AinaTranslator_model_path="./aina-translator-it-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-it/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-it/MTUOC_tokenizer_ita.py", "MTUOC_tokenizer_ita.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_ita"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-it-ca/it-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-it-ca/it-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-it-ca/ca-it.params"
         GetWordAlignments_rev_err_file="./aina-translator-it-ca/ca-it.err"   
         truecaser_tokenizer="MTUOC_tokenizer_ita"
         tcmodel="./aina-translator-it-ca/tc.it"
         config.srxfiles=["segment.srx"]
         config.srxlang="Italian"
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="gl-ca":
         aina_repo="projecte-aina/aina-translator-gl-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-gl"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-gl"
         config.AinaTranslator_model_path="./aina-translator-gl-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-gl-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-gl-ca/MTUOC_tokenizer_glg.py", "MTUOC_tokenizer_glg.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_glg"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-gl-ca/gl-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-gl-ca/gl-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-gl-ca/ca-gl.params"
         GetWordAlignments_rev_err_file="./aina-translator-gl-ca/ca-gl.err"   
         truecaser_tokenizer="MTUOC_tokenizer_glg"
         tcmodel="./aina-translator-gl-ca/tc.gl"
         config.srxfiles=["segment.srx"]
         config.srxlang="Galician"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="ca-fr":
         aina_repo="projecte-aina/aina-translator-ca-fr"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-fr"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-ca"
         config.AinaTranslator_model_path="./aina-translator-ca-fr"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-fr/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-fr/MTUOC_tokenizer_fra.py", "MTUOC_tokenizer_fra.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_cat"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_fra"
         GetWordAlignments_fwd_params_file="./aina-translator-ca-fr/ca-fr.params"
@@ -742,29 +896,38 @@ elif config.MTUOCServer_MTengine=="Aina":
         tcmodel="./aina-translator-ca-fr/tc.ca"
         config.srxfiles=["segment.srx"]
         config.srxlang="Catalan"
+        config.truecase="upper"
+        config.restoretags=True
     
     elif model=="fr-ca":
         aina_repo="projecte-aina/aina-translator-fr-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-fr"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-fr"
         config.AinaTranslator_model_path="./aina-translator-fr-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-ca-fr/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-ca-fr/MTUOC_tokenizer_fra.py", "MTUOC_tokenizer_fra.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_fra"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-fr-ca/fr-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-fr-ca/fr-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-fr-ca/ca-fr.params"
         GetWordAlignments_rev_err_file="./aina-translator-fr-ca/ca-fr.err"   
         truecaser_tokenizer="MTUOC_tokenizer_fra"
         tcmodel="./aina-translator-fr-ca/tc.fr"
         config.srxfiles=["segment.srx"]
         config.srxlang="French"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="eu-ca":
         aina_repo="projecte-aina/aina-translator-eu-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-eu"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-eu"
         config.AinaTranslator_model_path="./aina-translator-eu-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-eu-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-eu-ca/MTUOC_tokenizer_eus.py", "MTUOC_tokenizer_eus.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-eu-ca/eu-ca.params"
@@ -776,17 +939,21 @@ elif config.MTUOCServer_MTengine=="Aina":
         tcmodel="./aina-translator-eu-ca/tc.eu"
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="es-oc_aran":
         aina_repo="projecte-aina/aina-translator-es-oc"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-es-oc_aran"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-es"
         config.AinaTranslator_model_path="./aina-translator-es-oc"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-es-oc/MTUOC_tokenizer_spa.py", "MTUOC_tokenizer_spa.py")
+        shutil.copy("./aina-translator-es-oc/MTUOC_tokenizer_oci_aran.py", "MTUOC_tokenizer_oci_aran.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
-        config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
+        config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_oci_aran"
         GetWordAlignments_fwd_params_file="./aina-translator-es-oc/es-oc_aran.params"
         GetWordAlignments_fwd_err_file="./aina-translator-es-oc/es-oc_aran.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-es-oc/oc_aran-es.params"
         GetWordAlignments_rev_err_file="./aina-translator-es-oc/oc_aran-es.err"   
         truecaser_tokenizer="MTUOC_tokenizer_spa"
@@ -794,17 +961,21 @@ elif config.MTUOCServer_MTengine=="Aina":
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
         config.MTUOCServer_MTengine="NLLB"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="es-ast":
         aina_repo="projecte-aina/aina-translator-es-ast"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-es-ast"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-es"
         config.AinaTranslator_model_path="./aina-translator-es-ast"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-es-ast/MTUOC_tokenizer_spa.py", "MTUOC_tokenizer_spa.py")
+        shutil.copy("./aina-translator-es-ast/MTUOC_tokenizer_ast.py", "MTUOC_tokenizer_ast.py") 
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_ast"
         GetWordAlignments_fwd_params_file="./aina-translator-es-ast/es-ast.params"
         GetWordAlignments_fwd_err_file="./aina-translator-es-ast/es-ast.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-es-ast/ast-es.params"
         GetWordAlignments_rev_err_file="./aina-translator-es-ast/ast-es.err"   
         truecaser_tokenizer="MTUOC_tokenizer_spa"
@@ -812,17 +983,21 @@ elif config.MTUOCServer_MTengine=="Aina":
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
         config.MTUOCServer_MTengine="NLLB"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="es-an":
         aina_repo="projecte-aina/aina-translator-es-an"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-es-an"
         truecaser_repo="aoliverg/MTUOC-Aina-truecasing-model-es"
         config.AinaTranslator_model_path="./aina-translator-es-an"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-es-an/MTUOC_tokenizer_spa.py", "MTUOC_tokenizer_spa.py")
+        shutil.copy("./aina-translator-es-an/MTUOC_tokenizer_arg.py", "MTUOC_tokenizer_arg.py")
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_spa"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_arg"
         GetWordAlignments_fwd_params_file="./aina-translator-es-an/es-an.params"
         GetWordAlignments_fwd_err_file="./aina-translator-es-an/es-an.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-es-an/an-es.params"
         GetWordAlignments_rev_err_file="./aina-translator-es-an/an-es.err"   
         truecaser_tokenizer="MTUOC_tokenizer_spa"
@@ -830,17 +1005,22 @@ elif config.MTUOCServer_MTengine=="Aina":
         config.srxfiles=["segment.srx"]
         config.srxlang="Spanish"
         config.MTUOCServer_MTengine="NLLB"
+        config.truecase="upper"
+        config.restoretags=True
         
     elif model=="zh-ca":
         aina_repo="projecte-aina/aina-translator-zh-ca"
         alignment_repo="aoliverg/MTUOC-Aina-alignment_model-ca-zh"
         truecaser_repo=None
         config.AinaTranslator_model_path="./aina-translator-zh-ca"
+        download_aina_model(aina_repo,config.AinaTranslator_revision,alignment_repo,truecaser_repo,config.AinaTranslator_model_path)
+        shutil.copy("./aina-translator-zh-ca/MTUOC_tokenizer_cat.py", "MTUOC_tokenizer_cat.py")
+        shutil.copy("./aina-translator-zh-ca/MTUOC_tokenizer_zho_jieba.py", "MTUOC_tokenizer_zho_jieba.py")
+        shutil.copy("./aina-translator-zh-ca/dict.txt.big", "dict.txt.big")
         config.GetWordAlignments_tokenizerSL="MTUOC_tokenizer_zho_jieba"
         config.GetWordAlignments_tokenizerTL="MTUOC_tokenizer_cat"
         GetWordAlignments_fwd_params_file="./aina-translator-zh-ca/zh-ca.params"
         GetWordAlignments_fwd_err_file="./aina-translator-zh-ca/zh-ca.err"
-
         GetWordAlignments_rev_params_file="./aina-translator-zh-ca/ca-zh.params"
         GetWordAlignments_rev_err_file="./aina-translator-zh-ca/ca-zh.err"   
         truecaser_tokenizer=None
@@ -848,6 +1028,8 @@ elif config.MTUOCServer_MTengine=="Aina":
         config.srxfiles=["segment.srx"]
         config.srxlang="Generic"
         config.MTUOCServer_MTengine="M2M100"
+        config.truecase="never"
+        config.restoretags=True
         
     elif model=="ca-zh":
         aina_repo="projecte-aina/aina-translator-ca-zh"
@@ -877,25 +1059,10 @@ elif config.MTUOCServer_MTengine=="Aina":
             segmenter.set_srx_file(srxfile,config.srxlang)
             config.segmenters.append(segmenter)
     
-    printLOG(1,"Downloading translation model.")
-    model_dir = snapshot_download(repo_id=aina_repo, 
-                               revision=config.AinaTranslator_revision, 
-                               local_dir=config.AinaTranslator_model_path)
-                               
-    printLOG(1,"Downloading alignment model.")                           
-    ali_model_dir = snapshot_download(repo_id=alignment_repo, 
-                               revision="main", 
-                               local_dir=config.AinaTranslator_model_path) 
+
     
     
-    if not truecaser_repo==None:
-        try:
-            printLOG(1,"Downloading truecaser model.")
-            truecaser_repo_dir = snapshot_download(repo_id=truecaser_repo, 
-                                       revision="main", 
-                                       local_dir=config.AinaTranslator_model_path) 
-        except:
-            printLOG(1,"Error  downloading truecaser model from ",truecaser_repo,sys.exec_info())
+    
      
     if config.MTUOCServer_MTengine=="Aina":
         config.AinaTranslator_num_hypotheses=configYAML2["Aina"]["num_hypotheses"]
@@ -1088,6 +1255,19 @@ elif config.MTUOCServer_MTengine=="DeepL":
     config.DeepLTranslator.createTranslator()
 
 #TRUECASER
+
+
+if tokenize and tokenizer=="Moses":
+    from sacremoses import MosesTokenizer, MosesDetokenizer
+    config.tokenizerSL=MosesTokenizer(lang=MosesTokenizerLang)
+
+if tokenizer.startswith("MTUOC"):
+    import importlib.util
+    if not tokenizer.endswith(".py"): tokenizer=tokenizer+".py"
+    spec = importlib.util.spec_from_file_location('', tokenizer)
+    tokenizermod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tokenizermod)
+    config.tokenizerSL=tokenizermod.Tokenizer()
 
 createtruecaser=True
 

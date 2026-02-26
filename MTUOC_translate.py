@@ -204,8 +204,11 @@ def translate_chunks(segment):
 def translate_string(segment, segment_notags):
     
     if config.sentencepiece:
+
         segment=config.sentencepiecetokenizer.tokenize(segment)
         segment_notags=config.sentencepiecetokenizer.tokenize(segment_notags)
+        segment="<2oci_aran> "+segment
+        segment_notags="<2oci_aran> "+segment_notags
     
             
     if config.MTUOCServer_MTengine=="Transformers" or config.MTUOCServer_MTengine=="OpusMT":
@@ -246,6 +249,15 @@ def translate_string(segment, segment_notags):
                 translationSTR=config.ollamaTranslator.translate(segment)
         except:
             printLOG(2,"Error translating segment with Ollama",sys.exc_info())  
+            
+    elif config.MTUOCServer_MTengine=="HuggingFace":
+        try:
+            if config.remove_tags:
+                translationSTR=config.HFTranslator.translate(segment_notags)
+            else:
+                translationSTR=config.HFTranslator.translate(segment)
+        except:
+            printLOG(2,"Error translating segment with HuggingFace",sys.exc_info()) 
     
     elif config.MTUOCServer_MTengine=="Aina":
         try:
@@ -342,7 +354,7 @@ def translate_string(segment, segment_notags):
                 translationSTR=config.DeepLTranslator.translate(segment)
         except:
             printLOG(1,"Error translating segment DeepL",sys.exc_info())
-            
+    print(translationSTR)
     return(translationSTR)
 
 

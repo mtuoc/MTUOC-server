@@ -1,5 +1,5 @@
 Aina:
-  model: ca-en
+  model: zh-ca
   revision: main
   beam_size: 5
   num_hypotheses: 5

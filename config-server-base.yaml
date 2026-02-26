@@ -1,0 +1,90 @@
+MTengine: Aina
+system_name: MTUOC-OpusMT-eng-spa
+
+engine_repository: None
+
+
+TranslationMemory: 
+  Path: None  
+  sl: es
+  tl: en
+  
+
+#path to memory or None
+
+MTUOCServer:
+  port: 8010
+  type: MTUOC
+  #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
+  verbosity_level: 1
+  #specific configuration when acting as ONMT server
+  log_file: log.log
+
+
+Preprocess:
+  max_segment_chars: 1000
+  checkistranslatable: True
+  tokenize: False
+  tokenizer: MTUOC_tokenizer_eng
+  #one of None, MTUOC_tokenizer_xxx, Moses
+  MosesTokenizerLang: es
+  truecase: never
+  #one of always, never, upper
+  truecaser: MTUOC
+  #one of MTUOC, Moses
+  truecaser_tokenizer: MTUOC_tokenizer_eng
+  #one of None, MTUOC_tokenizer_xxx, Moses
+  tcmodel: None
+  MosesTokenizerLang: en    
+  use_MosesPunctNormalizer: False
+  unescape_html: True
+  fixencoding: True
+  escapeforMoses: False
+  remove_tags: True
+  segment: True
+  srxfiles: segment.srx
+  srxlang: English
+  remove_control_characters: True
+  remove_non_printable: True
+  remove_non_latin_extended_chars: True
+  remove_non_unicode_script_chars: True
+  change_input_files: None
+  change_input_delimiter: ;
+  change_input_quote: '"'
+  splitlongsegments: True
+  maxlong: 270
+  separators: "; : ,"
+
+
+Postprocess:
+  restore_case: False
+  restore_tags: False
+  numeric_check: False
+  change_output_files: None
+  change_output_delimiter: ;
+  change_output_quote: '"'
+  change_translation_files: None
+  change_translation_delimiter: ;
+  change_translation_quote: '"'
+  
+AutomaticPostedition: 
+  type: None
+  #None or HFPosteditor OllamaPosteditor
+  sbert_model: LaBSE
+  sbert_threshold: 0.95
+  
+  
+GetWordAlignments:
+  type: None
+  #one of None, fast_align
+  tokenizerSL: MTUOC_tokenizer_eng
+  #one of None, MTUOC_tokenizer_xxx, Moses
+  tokenizerTL: MTUOC_tokenizer_spa
+  #one of None, MTUOC_tokenizer_xxx, Moses
+  tokenizerSLcode: en
+  tokenizerTLcode: es
+  #if required by tokenizer
+  fwd_params_file: None #./MTUOC-Marian-TAN-IBE-spa-oci_aran/es-oci_aran.params
+  fwd_err_file: None #./MTUOC-Marian-TAN-IBE-spa-oci_aran/es-oci_aran.err
+  rev_params_file: None #./MTUOC-Marian-TAN-IBE-spa-oci_aran/oci_aran-es.params
+  rev_err_file: None #./MTUOC-Marian-TAN-IBE-spa-oci_aran/oci_aran-es.err

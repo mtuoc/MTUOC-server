@@ -281,8 +281,9 @@ class MarianTranslator:
                
     def translate(self,text):
         self.alternate_translations=[]
-        if self.prefix:
-            text=self.prefix+" "+text
+        #if self.prefix:
+        #    text="▁ "+self.prefix+" "+text
+        print("*********",text)
         try:
             config.ws.send(text)
         except:
@@ -298,6 +299,7 @@ class MarianTranslator:
             translations=formatted_output
         # 📝 Processament final de les candidates (ja siguin originals o repuntuades)
         tc_aux=translations.split("\n")
+        print(tc_aux)
         for i in range(0,len(tc_aux)):
             # Evitem línies buides al final si n'hi ha
             if not tc_aux[i].strip(): continue 

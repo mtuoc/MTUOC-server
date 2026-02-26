@@ -6,6 +6,9 @@ import sys
 import threading
 #from sacremoses import MosesTokenizer
 import platform
+import stat
+from pathlib import Path
+import requests
 import time
 
 # Simplified, non-threadsafe version for force_align.py
@@ -27,12 +30,118 @@ class WordAligner:
         '''
         build_root = os.path.abspath(fa_dir)
         if platform.system()=="Windows":
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_align.exe'
+            nom_fitxer = 'fast_align.exe'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading fast_align.exe: {e}")
+            
+            
             fast_align = os.path.join(build_root, 'fast_align.exe')
+        elif platform.system()=="Darwin":
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_alignMAC'
+            nom_fitxer = 'fast_alignMAC'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                    st = os.stat(ruta_fitxer)
+                    os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading fast_alignMAC: {e}")
+                except OSError as e:
+                    printLOG(1, "Error changing permissions to fast_alignMAC: {e}")
+            fast_align = os.path.join(build_root, 'fast_alignMAC')
+
         else:
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_align'
+            nom_fitxer = 'fast_align'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                    st = os.stat(ruta_fitxer)
+                    os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading fast_align: {e}")
+                except OSError as e:
+                    printLOG(1, "Error changing permissions to fast_align: {e}")
             fast_align = os.path.join(build_root, 'fast_align')
+        
+        
+        
         if platform.system()=="Windows":
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atools.exe'
+            nom_fitxer = 'atools.exe'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading atools.exe: {e}")
             atools = os.path.join(build_root, 'atools.exe')
+                
+        elif platform.system()=="Darwin":
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atoolsMAC'
+            nom_fitxer = 'atoolsMAC'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                    st = os.stat(ruta_fitxer)
+                    os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading atoolsMAC: {e}")
+                except OSError as e:
+                    printLOG(1, "Error changing permissions to atoolsMAC: {e}")
+            atools = os.path.join(build_root, 'atoolsMAC')
+
         else:
+            url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atools'
+            nom_fitxer = 'atools'
+            ruta_fitxer = Path(nom_fitxer)
+            if not ruta_fitxer.exists():
+                try:
+                    resposta = requests.get(url, stream=True)
+                    resposta.raise_for_status()
+                    with open(ruta_fitxer, 'wb') as fitxer:
+                        for chunk in resposta.iter_content(chunk_size=8192):
+                            if chunk:
+                                fitxer.write(chunk)
+                        st = os.stat(ruta_fitxer)
+                        os.chmod(ruta_fitxer, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                except requests.exceptions.RequestException as e:
+                    printLOG(1," Error downloading atools: {e}")
+                except OSError as e:
+                    printLOG(1, "Error changing permissions to atools: {e}")
             atools = os.path.join(build_root, 'atools')
 
         (fwd_T, fwd_m) = self.read_err(fwd_err)
