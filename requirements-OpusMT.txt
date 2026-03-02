@@ -1,0 +1,16 @@
+#pip install --upgrade pip
+#python3 -m pip install --upgrade pip
+
+regex
+pyyaml
+ftfy
+huggingface_hub
+requests
+lxml
+transformers
+torch
+sentencepiece
+sacremoses
+flask
+waitress
+websocket-client
