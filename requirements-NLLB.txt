@@ -15,4 +15,3 @@ websocket-client
 huggingface_hub
 transformers
 torch
-
