@@ -3,3 +3,5 @@ OpusMT:
   beam_size: 5
   num_hypotheses: 5
   multilingual_prefix: ""
+  device: cuda
+  #cuda cpu

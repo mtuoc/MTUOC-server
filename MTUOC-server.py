@@ -481,10 +481,13 @@ if config.MTUOCServer_MTengine=="OpusMT":
     config.Transformers_beam_size=configYAML2["OpusMT"]["beam_size"]
     config.Transformers_num_hypotheses=configYAML2["OpusMT"]["num_hypotheses"]
     config.multilingual=configYAML2["OpusMT"]["multilingual_prefix"]
+    device=configYAML2["OpusMT"]["device"]
+    
     config.TransformersTranslator=TransformersTranslator()
     config.TransformersTranslator.set_model(config.Transformers_model_path)
     config.TransformersTranslator.set_beam_size(config.Transformers_beam_size)
     config.TransformersTranslator.set_num_hypotheses(config.Transformers_num_hypotheses)
+    config.TransformersTranslator.set_device(device)
     printLOG(1,"Translating with OpusMT models",config.Transformers_model_path)
 
 elif config.MTUOCServer_MTengine=="NLLB":
