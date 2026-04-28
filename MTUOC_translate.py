@@ -207,8 +207,6 @@ def translate_string(segment, segment_notags):
 
         segment=config.sentencepiecetokenizer.tokenize(segment)
         segment_notags=config.sentencepiecetokenizer.tokenize(segment_notags)
-        segment="<2oci_aran> "+segment
-        segment_notags="<2oci_aran> "+segment_notags
     
             
     if config.MTUOCServer_MTengine=="Transformers" or config.MTUOCServer_MTengine=="OpusMT":
