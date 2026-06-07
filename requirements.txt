@@ -21,6 +21,7 @@ torch
 
 #transformers
 transformers
+accelerate
 
 #ctranslate
 ctranslate2
@@ -28,3 +29,6 @@ nvidia-cublas-cu12
 
 #Ollama
 ollama
+
+huggingface_hub
+hf_xet

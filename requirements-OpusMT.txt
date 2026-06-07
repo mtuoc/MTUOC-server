@@ -1,0 +1,16 @@
+#GENERAL
+pyyaml
+requests
+flask
+waitress
+websocket-client
+sentencepiece
+sacremoses
+ftfy
+protobuf
+
+#OPUS MT
+#pytorch
+torch
+
+

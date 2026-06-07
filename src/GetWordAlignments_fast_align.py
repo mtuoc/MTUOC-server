@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 import threading
-#from sacremoses import MosesTokenizer
 import platform
 import stat
 from pathlib import Path
@@ -28,11 +27,16 @@ class WordAligner:
             * fa_dir: Path to the fast_align build.
 
         '''
-        build_root = os.path.abspath(fa_dir)
+        if getattr(sys, 'frozen', False):
+            build_root = os.path.dirname(sys.executable)
+        else:
+            build_root = os.path.abspath(fa_dir)
+            
+        os.makedirs(build_root, exist_ok=True)
         if platform.system()=="Windows":
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_align.exe'
             nom_fitxer = 'fast_align.exe'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)
@@ -49,7 +53,7 @@ class WordAligner:
         elif platform.system()=="Darwin":
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_alignMAC'
             nom_fitxer = 'fast_alignMAC'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)
@@ -69,7 +73,7 @@ class WordAligner:
         else:
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/fast_align'
             nom_fitxer = 'fast_align'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)
@@ -91,7 +95,7 @@ class WordAligner:
         if platform.system()=="Windows":
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atools.exe'
             nom_fitxer = 'atools.exe'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)
@@ -107,7 +111,7 @@ class WordAligner:
         elif platform.system()=="Darwin":
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atoolsMAC'
             nom_fitxer = 'atoolsMAC'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)
@@ -127,7 +131,7 @@ class WordAligner:
         else:
             url = 'https://github.com/mtuoc/MTUOC-server/releases/download/v202511/atools'
             nom_fitxer = 'atools'
-            ruta_fitxer = Path(nom_fitxer)
+            ruta_fitxer = Path(os.path.join(build_root, nom_fitxer))
             if not ruta_fitxer.exists():
                 try:
                     resposta = requests.get(url, stream=True)

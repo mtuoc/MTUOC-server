@@ -144,7 +144,7 @@ class Preprocessor:
         return segment.replace("\x00", "")
 
     def remove_nonprintable(self, segment: str) -> str:
-        """Equival al sed: s/[^[:print:]]//g (Elimina caràcters de control \p{C})."""
+        r"""Equival al sed: s/[^[:print:]]//g (Elimina caràcters de control \p{C})."""
         if not segment: return ""
         return regex.sub(r'\p{C}', '', segment)
 
