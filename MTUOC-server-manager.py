@@ -278,65 +278,19 @@ class MTUOCManagerApp:
                 config_full_path = os.path.join(self.base_dir, selected_config)
                 shutil.copy(config_full_path, os.path.join(self.base_dir, "config-server.yaml"))
                 
-                # --- AVÍS INFORMATIU D'OLLAMA ---
+                # --- AVÍS INFORMATIU D'OLLAMA (TEXT PUR) ---
                 try:
                     with open(config_full_path, 'r', encoding='utf-8') as f:
                         content = yaml.safe_load(f)
                     server_type = content.get("MTUOCServer", {}).get("type", "")
                     engine_name = content.get("MTengine", "")
                     if "ollama" in server_type.lower() or "ollama" in str(engine_name).lower():
-                        self.log_message("ℹ Note: Ollama engine detected. VRAM will be automatically freed by Ollama in 5 minutes if inactive.\n")
+                        self.log_message("[INFO] Note: Ollama engine detected. VRAM will be automatically freed by Ollama in 5 minutes if inactive.\n")
                         self.root.update_idletasks()
                 except Exception as e_yaml:
                     print(f"Ollama log check skip: {e_yaml}")
 
-            # --- SELECCIÓ DEL PROPRÒ EXEC DE CONTROL D'ATURADA ---
-            if getattr(sys, 'frozen', False):
-                binary_stop_name = "MTUOC-stop-server.exe" if sys.platform.startswith('win') else "MTUOC-stop-server"
-                stop_path = os.path.join(self.base_dir, binary_stop_name)
-                cmd_stop = [stop_path, selected_config if selected_config else ""]
-            else:
-                cmd_stop = [sys.executable, "MTUOC-stop-server.py", selected_config if selected_config else ""]
-
-            subprocess.run(cmd_stop, capture_output=True, text=True, cwd=self.base_dir)
-            
-            if self.process: 
-                try:
-                    self.process.terminate()
-                    self.process.wait(timeout=2)
-                except: pass
-                self.process = None
-                
-            self.lbl_status.config(text="Status: Terminated / Stopped", foreground="red")
-            self.btn_start.config(state=tk.NORMAL)
-            self.btn_stop.config(state=tk.DISABLED)
-            
-        except Exception as e:
-            messagebox.showerror("Termination Error", f"An anomaly occurred while shutting down the server:\n{e}")
-    
-    def stop_server(self):
-        self.log_message("\n--- Dispatching termination signal to server... ---\n")
-        try:
-            self.stop_reader.set()
-            
-            selected_config = self.get_selected_config()
-            if selected_config:
-                config_full_path = os.path.join(self.base_dir, selected_config)
-                shutil.copy(config_full_path, os.path.join(self.base_dir, "config-server.yaml"))
-                
-                # --- AVÍS INFORMATIU D'OLLAMA ---
-                try:
-                    with open(config_full_path, 'r', encoding='utf-8') as f:
-                        content = yaml.safe_load(f)
-                    server_type = content.get("MTUOCServer", {}).get("type", "")
-                    engine_name = content.get("MTengine", "")
-                    if "ollama" in server_type.lower() or "ollama" in str(engine_name).lower():
-                        self.log_message("ℹ Note: Ollama engine detected. VRAM will be automatically freed by Ollama in 5 minutes if inactive.\n")
-                        self.root.update_idletasks()
-                except Exception as e_yaml:
-                    print(f"Ollama log check skip: {e_yaml}")
-
-            # --- SELECCIÓ DEL PROPRÒ EXEC DE CONTROL D'ATURADA ---
+            # --- SELECCIÓ DEL PROPI EXEC DE CONTROL D'ATURADA ---
             if getattr(sys, 'frozen', False):
                 binary_stop_name = "MTUOC-stop-server.exe" if sys.platform.startswith('win') else "MTUOC-stop-server"
                 stop_path = os.path.join(self.base_dir, binary_stop_name)
@@ -752,12 +706,12 @@ class MTUOCManagerApp:
                 self.root.after(0, self.update_recipe_listbox)
             except Exception as e:
                 self.root.after(0, lambda: messagebox.showerror("Connection Error", f"Could not access the recipe repository:\n{e}"))
-                self.root.after(0, lambda: self.recipe_log(f"❌ Connection error: {e}\n"))
+                self.root.after(0, lambda: self.recipe_log(f"Connection error: {e}\n"))
         threading.Thread(target=fetch, daemon=True).start()
 
     def update_recipe_listbox(self):
         self.filter_recipes()
-        self.recipe_log(f"✔ Found {len(self.all_recipes)} available recipes.\n")
+        self.recipe_log(f"Found {len(self.all_recipes)} available recipes.\n")
 
     def filter_recipes(self, *args):
         search_text = self.search_var.get().lower()

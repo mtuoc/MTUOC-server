@@ -210,68 +210,6 @@ if dopostprocess and postprocess_yaml and os.path.exists(postprocess_yaml):
         except:
             print("Error reading changes translation file:",sys.exc_info())
     
-    
-    
-    '''        
-    if restore_tags:
-        if restorationtype == "fast_align":
-            fwd_params = postprocessYAML["Restore_tags"]["fwd_params_file"]
-            fwd_err = postprocessYAML["Restore_tags"]["fwd_err_file"]
-            rev_params = postprocessYAML["Restore_tags"]["rev_params_file"]
-            rev_err = postprocessYAML["Restore_tags"]["rev_err_file"]
-
-            from GetWordAlignments_fast_align import WordAligner
-            
-            # 1. Llegim els valors del YAML
-            tokenizer_sl_path = postprocessYAML["Restore_tags"]["tokenizerSL"]
-            tokenizer_tl_path  = postprocessYAML["Restore_tags"]["tokenizerTL"]
-            sl_code = postprocessYAML["Restore_tags"]["tokenizerSLcode"]
-            tl_code = postprocessYAML["Restore_tags"]["tokenizerTLcode"]
-
-            # 2. Funció auxiliar per carregar qualsevol tokenitzador dinàmicament
-            def load_tokenizer(tokenizer_setting, lang_code):
-                if not tokenizer_setting or tokenizer_setting == "None":
-                    return None
-                
-                # Opció A: Si és Moses
-                if "Moses" in tokenizer_setting:
-                    from sacremoses import MosesTokenizer
-                    return MosesTokenizer(lang=lang_code)
-                
-                # Opció B: Si és Spacy
-                elif "Spacy" in tokenizer_setting:
-                    # Suposant que utilitzes un MTUOC_SpacyTokenizer propi o spacy estàndard
-                    import spacy
-                    return spacy.load(lang_code)
-                
-                # Opció C: Si és un fitxer .py de MTUOC (ex: aina-translator-ca-pt.MTUOC_tokenizer_cat.py)
-                elif tokenizer_setting.endswith(".py"):
-                    # Obtenim un nom de mòdul genèric a partir del nom del fitxer
-                    module_name = os.path.basename(tokenizer_setting).replace(".py", "")
-                    
-                    # Carreguem el fitxer .py dinàmicament
-                    spec = importlib.util.spec_from_file_location(module_name, tokenizer_setting)
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                    
-                    # Instanciem la classe Tokenizer() de dins d'aquest fitxer
-                    return module.Tokenizer()
-                
-                else:
-                    raise ValueError(f"Tipus de tokenitzador no reconegut: {tokenizer_setting}")
-
-            # 3. Instanciem els tokenitzadors dinàmics d'origen i destí
-            tok_src = load_tokenizer(tokenizer_sl_path, sl_code)
-            tok_tgt = load_tokenizer(tokenizer_tl_path, tl_code)
-
-            # 4. Inicialitzem el WordAligner amb els codis d'idioma corresponents
-            wordaligner = WordAligner(fwd_params, fwd_err, rev_params, rev_err, sl_code, tl_code)
-            wordaligner.set_src_tokenizer(tok_src)
-            wordaligner.set_tgt_tokenizer(tok_tgt)
-            
-        else:
-            wordaligner = None
-    '''
     wordaligner = None
     if restore_tags:
         # Segons el teu format llegit des del YAML: postprocessRestoreYAML
@@ -467,7 +405,7 @@ elif MTUOCServer_MTengine == "Marian":
 
 else:
     import sys
-    print(f"❌ ERROR: El motor '{MTUOCServer_MTengine}' no està reconegut al servidor.")
+    print(f"ERROR: El motor '{MTUOCServer_MTengine}' no està reconegut al servidor.")
     sys.exit(1)
     
 translationMemory=None

@@ -26,20 +26,20 @@ class RecipeDownloader:
                 with urllib.request.urlopen(req) as response:
                     return yaml.safe_load(response.read().decode('utf-8'))
             except Exception as e:
-                print(f"❌ Critical error downloading remote recipe: {e}")
+                print(f"Critical error downloading remote recipe: {e}")
                 sys.exit(1)
         
         # Otherwise, handle it as a local file
         else:
             print(f"Local recipe detected. Reading file: {self.target}")
             if not os.path.exists(self.target):
-                print(f"❌ Error: Local recipe file '{self.target}' does not exist.")
+                print(f"Error: Local recipe file '{self.target}' does not exist.")
                 sys.exit(1)
             try:
                 with open(self.target, 'r', encoding='utf-8') as f:
                     return yaml.safe_load(f)
             except Exception as e:
-                print(f"❌ Critical error reading or parsing local YAML recipe: {e}")
+                print(f"Critical error reading or parsing local YAML recipe: {e}")
                 sys.exit(1)
 
     def download_item(self, url: str, target_dir: str):
@@ -104,9 +104,9 @@ class RecipeDownloader:
                 self.download_item(url, local_path)
             except Exception as e:
                 if is_optional:
-                    print(f"⚠ Optional item [{item_id}] failed. Skipping... Error: {e}")
+                    print(f"Optional item [{item_id}] failed. Skipping... Error: {e}")
                 else:
-                    print(f"❌ CRITICAL ERROR: Required item [{item_id}] failed to download.")
+                    print(f"CRITICAL ERROR: Required item [{item_id}] failed to download.")
                     raise e
 
         print(f"==================================================")
