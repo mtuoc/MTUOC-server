@@ -71,12 +71,15 @@ a_server = Analysis(
     hiddenimports=[
         'html', 'pyyaml', 'requests', 'flask', 'waitress', 'websocket-client',
         'sentencepiece', 'sacremoses', 'ftfy', 'protobuf', 'jieba', 'fugashi',
-        'torch', 'transformers', 'ctranslate2', 'nvidia-cublas-cu12', 'ollama', 'accelerate'
+        'torch', 'transformers', 'ctranslate2', 'nvidia-cublas-cu12', 'ollama', 
+        'accelerate', 'deepl', 'google.cloud.translate' # <-- CORREGIT: S'afegeixen els clients de les APIs d'usuari
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        'eole', 'pydantic' # <-- SOL·LICITUD: Descomenta aquesta línia si vols que PyInstaller els ignori per complet en empaquetar
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -107,7 +110,7 @@ a_download = Analysis(
     pathex=[],
     binaries=[],
     datas=download_datas,  # <--- INJECCIÓ CORREGIDA INTEGRADA
-    hiddenimports=['requests', 'pyyaml', 'huggingface_hub', 'hf_xet', 'fsspec'],
+    hiddenimports=['requests', 'pyyaml', 'huggingface_hub', 'hf_xet', 'fsspec', 'tqdm', 'filelock'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

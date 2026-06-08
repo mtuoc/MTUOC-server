@@ -200,11 +200,17 @@ class MTUOCManagerApp:
                 cmd = [sys.executable, "-u", "MTUOC-server.py", config_full_path]
 
             # 5. Llancem el procés redirigint stdout i stderr DIRECTAMENT AL FITXER
+            # 5. Forcem l'entorn sense buffer (Vàlid tant per a Linux com per a Windows Executable)
+            env_unbuffered = os.environ.copy()
+            env_unbuffered["PYTHONUNBUFFERED"] = "1"
+
+            # Llancem el procés redirigint stdout i stderr DIRECTAMENT AL FITXER amb l'entorn net
             self.process = subprocess.Popen(
                 cmd,
                 stdout=self.server_log_file, 
                 stderr=self.server_log_file, 
-                cwd=self.base_dir
+                cwd=self.base_dir,
+                env=env_unbuffered  # <--- INJECTEM EL FIX DE BUFFERS ACÍ
             )
             
             self.lbl_status.config(
@@ -573,19 +579,53 @@ class MTUOCManagerApp:
             messagebox.showerror("File I/O Error", f"Unable to read files:\n{str(e)}")
 
     def save_server_yaml(self):
-        selected_config = self.get_selected_config()
-        if not selected_config: return
-        config_full_path = os.path.join(self.base_dir, selected_config)
+        # 🌟 PLA DE SEGURETAT DE DOBLE VIA:
+        # 1. Mirem si tenim la variable de memòria desada de l'última càrrega.
+        config_to_save = getattr(self, 'current_server_file', None)
+        
+        # 2. Si no hi és, provem de recuperar-la en viu de la selecció activa de la pestanya Control
+        if not config_to_save:
+            selected_config = self.get_selected_config()
+            if selected_config:
+                config_to_save = os.path.normpath(os.path.join(self.base_dir, selected_config))
+                # La guardem a la instància perquè ja quedi fixada per a la pròxima vegada
+                self.current_server_file = config_to_save
+
+        # 3. Si cap de les dues vies funciona, llavors sí que ens hem de plantar
+        if not config_to_save or not os.path.exists(config_to_save):
+            messagebox.showwarning("Save Error", "No active Server configuration could be detected.\n\nPlease select and load a configuration from the Control tab list first.")
+            return
+            
         raw_text = self.txt_editor_server.get("1.0", tk.END)
         try:
             yaml.safe_load(raw_text)
         except yaml.YAMLError as exc:
             messagebox.showerror("YAML Syntax Error (Server File)", f"Invalid structure rules detected:\n\n{str(exc)}")
             return
+            
         try:
-            with open(config_full_path, "w", encoding="utf-8") as f:
+            with open(config_to_save, "w", encoding="utf-8") as f:
                 f.write(raw_text)
-            messagebox.showinfo("Persistence Status", f"Server parameters committed to '{selected_config}'.")
+            messagebox.showinfo("Persistence Status", f"Server parameters committed successfully to:\n{os.path.basename(config_to_save)}")
+        except Exception as e:
+            messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
+
+    def save_model_yaml(self):
+        # 🌟 CORREGIT: Mirem directament si tenim un model associat obert
+        if not self.associated_model_yaml or not os.path.exists(self.associated_model_yaml): 
+            messagebox.showwarning("Save Error", "No active Model configuration is currently loaded or found.")
+            return
+            
+        raw_text = self.txt_editor_model.get("1.0", tk.END)
+        try:
+            yaml.safe_load(raw_text)
+        except yaml.YAMLError as exc:
+            messagebox.showerror("YAML Syntax Error (Model File)", f"Invalid structure rules detected:\n\n{str(exc)}")
+            return
+        try:
+            with open(self.associated_model_yaml, "w", encoding="utf-8") as f:
+                f.write(raw_text)
+            messagebox.showinfo("Persistence Status", "Model parameters committed successfully.")
         except Exception as e:
             messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
 

@@ -1,34 +1,35 @@
-#GENERAL
+# GENERAL & NETWORK INFRASTRUCTURE
 pyyaml
 requests
 flask
 waitress
 websocket-client
-sentencepiece
-sacremoses
 ftfy
 protobuf
 
-#Chinese
+# TOKENIZERS & TEXT PROCESSING
+sentencepiece
+sacremoses
 jieba
-
-#Japanese
 fugashi
 
-#OPUS MT
-#pytorch
+# DEEP LEARNING FRAMEWORKS
 torch
 
-#transformers
+# HUGGING FACE ECOSYSTEM (DOWNLOADER & LLM)
 transformers
 accelerate
-
-#ctranslate
-ctranslate2
-nvidia-cublas-cu12
-
-#Ollama
-ollama
-
 huggingface_hub
 hf_xet
+
+# LOCAL & API TRANSLATION ENGINES
+apertium
+ctranslate2
+nvidia-cublas-cu12
+ollama
+deepl
+google-cloud-translate
+
+# ADVANCED ENGINE & PARSING (EOLE)
+#eole
+#pydantic
