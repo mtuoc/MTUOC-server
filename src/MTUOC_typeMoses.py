@@ -30,6 +30,7 @@ def start_Moses_server(server_context):
         print("MTUOC server IP:   ", ip)
         print("MTUOC server port: ", server_context["port"])
         print("MTUOC server type: ", "Moses")
+        sys.stdout.flush()
         server.serve_forever()
     except KeyboardInterrupt:
         print('Exiting')

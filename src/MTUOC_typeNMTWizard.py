@@ -78,5 +78,5 @@ def start_NMTWizard_server(server_context):
     # REVISIÓ: Llegim el port del context enviat per MTUOC-server.py
     print("MTUOC server port: ", server_context["port"])
     print("MTUOC server type:", "NMTWizard")
-    
+    sys.stdout.flush()
     start(url_root=url_root, host="0.0.0.0", port=server_context["port"], debug=debug)

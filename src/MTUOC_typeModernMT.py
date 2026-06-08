@@ -63,5 +63,5 @@ def start_ModernMT_server(server_context):
     print("MTUOC server IP:   ", ip)
     print("MTUOC server port: ", server_context["port"])
     print("MTUOC server type:","ModernMT")
-    
+    sys.stdout.flush()
     start(url_root=url_root, host=ip, port=server_context["port"],debug=debug)

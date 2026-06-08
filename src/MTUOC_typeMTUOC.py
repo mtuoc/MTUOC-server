@@ -52,5 +52,5 @@ def start_MTUOC_server(server_context):
     print("MTUOC server IP:", ipLOG)
     print("MTUOC server port:", server_context["port"])
     print("MTUOC server type:", "MTUOC")
-    
+    sys.stdout.flush()
     start(url_root="/", host="0.0.0.0", port=server_context["port"])
