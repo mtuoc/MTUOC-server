@@ -51,7 +51,7 @@ a_manager = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=['psutil'],
+    hiddenimports=['psutil', 'huggingface_hub'], # <-- Afegit per si el manager fa crides en segon pla
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -62,23 +62,23 @@ a_manager = Analysis(
     noarchive=False,
 )
 
-# 2. ANALITZEM EL SERVIDOR (Incloent-hi la carpeta src, dependències i binaris de la GPU)
+# 2. ANALITZEM EL SERVIDOR
 a_server = Analysis(
     ['MTUOC-server.py'],
     pathex=[],
-    binaries=cublas_binaries,  # <--- ACÍ S'INJECTA LA LLIBRERIA LIBCUBLAS TROBADA
-    datas=[('src', 'src')],   # Inclou la carpeta src automàticament a _internal/src
+    binaries=cublas_binaries,  
+    datas=[('src', 'src')],   
     hiddenimports=[
         'html', 'pyyaml', 'requests', 'flask', 'waitress', 'websocket-client',
         'sentencepiece', 'sacremoses', 'ftfy', 'protobuf', 'jieba', 'fugashi',
         'torch', 'transformers', 'ctranslate2', 'nvidia-cublas-cu12', 'ollama', 
-        'accelerate', 'deepl', 'google.cloud.translate' # <-- CORREGIT: S'afegeixen els clients de les APIs d'usuari
+        'accelerate', 'deepl', 'google.cloud.translate', 'huggingface_hub' # <-- Afegit per compatibilitat amb models de HF
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        'eole', 'pydantic' # <-- SOL·LICITUD: Descomenta aquesta línia si vols que PyInstaller els ignori per complet en empaquetar
+        'eole', 'pydantic' 
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -92,7 +92,7 @@ a_stop = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=['requests'],
+    hiddenimports=['requests', 'pyyaml'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -104,13 +104,12 @@ a_stop = Analysis(
 )
 
 # 4. ANALITZEM EL DESCARREGADOR
-# Ara sí que s'assignen totes dues coses (codi + dist-info) mitjançant la variable 'download_datas'
 a_download = Analysis(
     ['MTUOC-downloader.py'],
     pathex=[],
     binaries=[],
-    datas=download_datas,  # <--- INJECCIÓ CORREGIDA INTEGRADA
-    hiddenimports=['requests', 'pyyaml', 'huggingface_hub', 'hf_xet', 'fsspec', 'tqdm', 'filelock'],
+    datas=download_datas,  
+    hiddenimports=['requests', 'pyyaml', 'huggingface_hub', 'hf_xet', 'fsspec', 'tqdm', 'filelock'], # <-- Unificat formalment amb el nom real de la llibreria
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -196,5 +195,5 @@ coll = COLLECT(
     exe_download, a_download.binaries, a_download.zipfiles, a_download.datas,
     exe_test, a_test.binaries, a_test.zipfiles, a_test.datas,
     strip=False, upx=True, upx_exclude=[],
-    name='MTUOC-server-linux',  # Directori de sortida unificat final
+    name='MTUOC-suite',  # Directori de sortida unificat final adaptat per a qualsevol SO
 )
