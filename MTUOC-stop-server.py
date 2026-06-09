@@ -19,26 +19,41 @@ import os
 import platform
 import yaml
 
+# --- FIX COMPATIBILITAT DE CONSOLA PER A WINDOWS LEGACY (TEXT PUR) ---
+if sys.platform.startswith('win'):
+    sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8', buffering=1, errors='replace')
+    sys.stderr = open(sys.stderr.fileno(), mode='w', encoding='utf-8', buffering=1, errors='replace')
+# --------------------------------------------------------------------
+
 def kill_port_process(port):
-    """Kills any process occupying the specified port on both Windows and Linux."""
+    """Kills any process occupying the specified port on Windows, Linux, and macOS."""
     try:
-        if platform.system() == "Windows":
+        system_platform = platform.system()
+        
+        if system_platform == "Windows":
             # Native Windows CMD command to find the PID holding the port and taskkill it forcefully (/F)
             command = f'for /f "tokens=5" %a in (\'netstat -aon ^| findstr :{port}\') do taskkill /f /pid %a'
+            os.system(command)
+            
+        elif system_platform == "Darwin":
+            # Comanda nativa per a macOS (Darwin) que utilitza lsof i kill sense requerir fuser
+            command = f"kill -9 $(lsof -t -i:{port}) 2>/dev/null"
+            os.system(command)
+            
         else:
             # Native Linux/Unix command to release the socket allocation
             command = f"fuser -k {port}/tcp"
+            os.system(command)
             
-        os.system(command)
-        print(f"Port {port} successfully cleared.")
+        print(f"[OK] Port {port} successfully cleared.")
     except Exception as e:
-        print(f"Anomalous behavior detected while clearing port {port}: {e}")
+        print(f"[ERROR] Anomalous behavior detected while clearing port {port}: {e}")
 
 # Determine configuration filename from command-line argument or default baseline
 configfile = sys.argv[1] if len(sys.argv) > 1 else "config-server.yaml"
 
 if not os.path.exists(configfile):
-    print(f"Error: Target initialization blueprint '{configfile}' does not exist.")
+    print(f"[ERROR] Target initialization blueprint '{configfile}' does not exist.")
     sys.exit(1)
 
 # 1. Load Server Configuration Schema
@@ -50,11 +65,11 @@ try:
     engine_name = config["MTengine"]
     model_config_path = config.get("model_config", None)
 except Exception as e:
-    print(f"Error parsing main server configuration structural mapping: {e}")
+    print(f"[ERROR] Parsing main server configuration structural mapping: {e}")
     sys.exit(1)
 
 # Terminate Primary MTUOC Framework Server Engine
-print(f"Decommissioning primary framework gateway on port {main_port}...")
+print(f"[INFO] Decommissioning primary framework gateway on port {main_port}...")
 kill_port_process(main_port)
 
 # 2. Dynamic Evaluation for Secondary Engines (Marian, Eole, etc.)
@@ -73,11 +88,11 @@ if model_config_path and os.path.exists(model_config_path):
             secondary_port = sub_config["Eole"].get("EolePort", None)
             
         if secondary_port:
-            print(f"Nested engine deployment detected ({engine_name}). Decommissioning sub-node on port {secondary_port}...")
+            print(f"[INFO] Nested engine deployment detected ({engine_name}). Decommissioning sub-node on port {secondary_port}...")
             kill_port_process(secondary_port)
             
     except Exception as e_sub:
-        print(f"Warning: Failed to evaluate nested layout mapping constraints at '{model_config_path}': {e_sub}")
+        print(f"[WARNING] Failed to evaluate nested layout mapping constraints at '{model_config_path}': {e_sub}")
 else:
     # Legacy hardcoded fallback arrays for standard configuration templates if path resolving was skipped
     try:
@@ -90,6 +105,6 @@ else:
                 e_cfg = yaml.load(e_stream, Loader=yaml.FullLoader)
                 kill_port_process(e_cfg["Eole"]["EolePort"])
     except Exception as e_legacy:
-        print(f"Legacy infrastructure parsing failure: {e_legacy}")
+        print(f"[ERROR] Legacy infrastructure parsing failure: {e_legacy}")
 
-print("MTUOC Infrastructure stack successfully stopped.")
+print("[INFO] MTUOC Infrastructure stack successfully stopped.")
