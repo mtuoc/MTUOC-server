@@ -5,6 +5,20 @@ import argparse
 import yaml
 from huggingface_hub import snapshot_download
 
+if sys.platform == 'darwin':
+    import ssl
+    try:
+        # Intentem utilitzar el paquet de certificats oficial si està instal·lat
+        import certifi
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        # Failsafe d'emergència si certifi no hi és: desactivem temporalment la verificació de context
+        ssl_context = ssl._create_unverified_context()
+    
+    # Injectem el context de manera global a totes les crides d'urllib
+    urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPSHandler(context=ssl_context)))
+# -----------------------------------------------------
+
 class RecipeDownloader:
     def __init__(self, recipe_path_or_url: str):
         self.target = recipe_path_or_url
