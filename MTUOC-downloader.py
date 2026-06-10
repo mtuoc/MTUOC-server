@@ -5,6 +5,13 @@ import argparse
 import yaml
 from huggingface_hub import snapshot_download
 
+# --- FIX COMPATIBILITAT DE CONSOLA PER A WINDOWS LEGACY (TEXT PUR) ---
+if sys.platform.startswith('win'):
+    sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8', buffering=1, errors='replace')
+    sys.stderr = open(sys.stderr.fileno(), mode='w', encoding='utf-8', buffering=1, errors='replace')
+# --------------------------------------------------------------------
+
+# --- FIX DE CERTIFICATS SSL PER A macOS (TEXT PUR) ---
 if sys.platform == 'darwin':
     import ssl
     try:
@@ -31,7 +38,7 @@ class RecipeDownloader:
         """
         # Check if the target is a remote URL
         if self.target.startswith("http://") or self.target.startswith("https://"):
-            print(f"Remote recipe detected. Fetching from: {self.target}")
+            print(f"[INFO] Remote recipe detected. Fetching from: {self.target}")
             try:
                 req = urllib.request.Request(
                     self.target, 
@@ -40,20 +47,20 @@ class RecipeDownloader:
                 with urllib.request.urlopen(req) as response:
                     return yaml.safe_load(response.read().decode('utf-8'))
             except Exception as e:
-                print(f"Critical error downloading remote recipe: {e}")
+                print(f"[ERROR] Critical error downloading remote recipe: {e}")
                 sys.exit(1)
         
         # Otherwise, handle it as a local file
         else:
-            print(f"Local recipe detected. Reading file: {self.target}")
+            print(f"[INFO] Local recipe detected. Reading file: {self.target}")
             if not os.path.exists(self.target):
-                print(f"Error: Local recipe file '{self.target}' does not exist.")
+                print(f"[ERROR] Local recipe file '{self.target}' does not exist.")
                 sys.exit(1)
             try:
                 with open(self.target, 'r', encoding='utf-8') as f:
                     return yaml.safe_load(f)
             except Exception as e:
-                print(f"Critical error reading or parsing local YAML recipe: {e}")
+                print(f"[ERROR] Critical error reading or parsing local YAML recipe: {e}")
                 sys.exit(1)
 
     def download_item(self, url: str, target_dir: str):
@@ -68,21 +75,21 @@ class RecipeDownloader:
         if url.startswith("http://") or url.startswith("https://"):
             filename = url.split("/")[-1]
             destination_path = os.path.join(target_dir, filename)
-            print(f"Downloading file from URL: {url} -> {destination_path}")
+            print(f"[INFO] Downloading file from URL: {url} -> {destination_path}")
             
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req) as response, open(destination_path, 'wb') as out_file:
                 out_file.write(response.read())
-            print(f"✔ File [{filename}] downloaded successfully.")
+            print(f"[OK] File [{filename}] downloaded successfully.")
 
         # Case B: Hugging Face Repository snapshot download
         else:
-            print(f"Downloading Hugging Face repository snapshot: {url} -> {target_dir}")
+            print(f"[INFO] Downloading Hugging Face repository snapshot: {url} -> {target_dir}")
             snapshot_download(
                 repo_id=url,
                 local_dir=target_dir
             )
-            print(f"✔ Repository [{url}] downloaded successfully.")
+            print(f"[OK] Repository [{url}] downloaded successfully.")
 
     def run(self):
         """Processes the unlimited list of downloads defined in the recipe."""
@@ -96,7 +103,7 @@ class RecipeDownloader:
         print(f"==================================================")
 
         if not download_list:
-            print("⚠ Warning: 'Download' list is empty or missing in the recipe.")
+            print("[WARNING] 'Download' list is empty or missing in the recipe.")
             return
 
         for item in download_list:
@@ -106,21 +113,21 @@ class RecipeDownloader:
             is_optional = item.get("optional", False)
 
             if not url:
-                print(f"⚠ Skipping item ID {item_id}: Missing 'url' field.")
+                print(f"[WARNING] Skipping item ID {item_id}: Missing 'url' field.")
                 continue
 
             # Resolve the subdirectory path relative to the current working directory
             local_path = os.path.abspath(sub_dir)
 
-            print(f"Processing item [{item_id}]...")
+            print(f"[INFO] Processing item [{item_id}]...")
 
             try:
                 self.download_item(url, local_path)
             except Exception as e:
                 if is_optional:
-                    print(f"Optional item [{item_id}] failed. Skipping... Error: {e}")
+                    print(f"[WARNING] Optional item [{item_id}] failed. Skipping... Error: {e}")
                 else:
-                    print(f"CRITICAL ERROR: Required item [{item_id}] failed to download.")
+                    print(f"[CRITICAL] Required item [{item_id}] failed to download.")
                     raise e
 
         print(f"==================================================")

@@ -177,21 +177,17 @@ class MTUOCManagerApp:
             return
 
         try:
-            # 1. Netegem la pantalleta gràfica de Control
             self.txt_log.delete("1.0", tk.END)
             self.log_message(f"--- Initializing {self.current_type} server on port {self.current_port} ---\n")
             
             self.stop_reader.clear()
 
-            # 2. LA TEVA IDEA: Creem/buidem el fitxer de log abans de començar la càrrega
             self.log_file_path = os.path.join(self.base_dir, "server_output.log")
             with open(self.log_file_path, "w", encoding="utf-8") as f_init:
-                f_init.write("") # Fitxer totalment buit i net
+                f_init.write("")
 
-            # 3. Obrim el fitxer en mode apèndix per al subprocess
             self.server_log_file = open(self.log_file_path, "a", encoding="utf-8")
 
-            # 4. Determinar la ruta de l'executable
             if getattr(sys, 'frozen', False):
                 binary_name = "MTUOC-server.exe" if sys.platform.startswith('win') else "MTUOC-server"
                 server_path = os.path.join(self.base_dir, binary_name)
@@ -199,18 +195,15 @@ class MTUOCManagerApp:
             else:
                 cmd = [sys.executable, "-u", "MTUOC-server.py", config_full_path]
 
-            # 5. Llancem el procés redirigint stdout i stderr DIRECTAMENT AL FITXER
-            # 5. Forcem l'entorn sense buffer (Vàlid tant per a Linux com per a Windows Executable)
             env_unbuffered = os.environ.copy()
             env_unbuffered["PYTHONUNBUFFERED"] = "1"
 
-            # Llancem el procés redirigint stdout i stderr DIRECTAMENT AL FITXER amb l'entorn net
             self.process = subprocess.Popen(
                 cmd,
                 stdout=self.server_log_file, 
                 stderr=self.server_log_file, 
                 cwd=self.base_dir,
-                env=env_unbuffered  # <--- INJECTEM EL FIX DE BUFFERS ACÍ
+                env=env_unbuffered
             )
             
             self.lbl_status.config(
@@ -222,7 +215,6 @@ class MTUOCManagerApp:
             
             self.root.update_idletasks()
             
-            # 6. Engeguem el fil que anirà llegint el fitxer de text de tant en tant
             threading.Thread(target=self.read_output_from_file, daemon=True).start()
             
         except Exception as e:
@@ -232,36 +224,29 @@ class MTUOCManagerApp:
         import time
         self.log_message("Monitoring log file for engine status...\n")
         
-        # Esperem un instant a que el fitxer es crei físicament al disc
         time.sleep(0.2)
         
         try:
             with open(self.log_file_path, "r", encoding="utf-8") as f_read:
-                # Ens col·loquem a l'inici del fitxer
                 f_read.seek(0)
                 
                 while not self.stop_reader.is_set():
                     if self.process is None:
                         break
                         
-                    # Llegim la línia actual del fitxer
                     line = f_read.readline()
                     
                     if line:
-                        # Si hi ha text nou, l'imprimim immediatament a la pantalla gràfica
                         self.lbl_status.after(0, lambda l=line: self.log_message(l))
                     else:
-                        # Si no hi ha text nou, comprovem si el servidor ha mort
                         if self.process.poll() is not None:
                             self.lbl_status.after(0, lambda: self.log_message("\n--- Server process terminated unexpectedly. ---\n"))
                             break
-                        # Si el servidor continua viu, descansem 200ms abans de tornar a comprovar el fitxer
                         time.sleep(0.2)
                         
         except Exception as e_file:
             print(f"Error reading log file tracker: {e_file}")
         finally:
-            # Tanquem de manera segura el descriptor del fitxer associat al subprocess quan acabi
             try:
                 if hasattr(self, 'server_log_file') and self.server_log_file:
                     self.server_log_file.close()
@@ -278,7 +263,6 @@ class MTUOCManagerApp:
                 config_full_path = os.path.join(self.base_dir, selected_config)
                 shutil.copy(config_full_path, os.path.join(self.base_dir, "config-server.yaml"))
                 
-                # --- AVÍS INFORMATIU D'OLLAMA (TEXT PUR) ---
                 try:
                     with open(config_full_path, 'r', encoding='utf-8') as f:
                         content = yaml.safe_load(f)
@@ -290,7 +274,6 @@ class MTUOCManagerApp:
                 except Exception as e_yaml:
                     print(f"Ollama log check skip: {e_yaml}")
 
-            # --- SELECCIÓ DEL PROPI EXEC DE CONTROL D'ATURADA ---
             if getattr(sys, 'frozen', False):
                 binary_stop_name = "MTUOC-stop-server.exe" if sys.platform.startswith('win') else "MTUOC-stop-server"
                 stop_path = os.path.join(self.base_dir, binary_stop_name)
@@ -314,7 +297,6 @@ class MTUOCManagerApp:
         except Exception as e:
             messagebox.showerror("Termination Error", f"An anomaly occurred while shutting down the server:\n{e}")
 
-    # --- RESTA DE SECCIONS SENSE CANVIS (MANTINGUDES PER COHERÈNCIA) ---
     def refresh_configs(self):
         self.config_files = []
         for file in os.listdir(self.base_dir):
@@ -353,53 +335,6 @@ class MTUOCManagerApp:
     def log_message(self, message):
         self.txt_log.insert(tk.END, message)
         self.txt_log.see(tk.END)
-
-    def read_output(self):
-        import time
-        self.log_message("Waiting for engine logs...\n")
-        
-        while not self.stop_reader.is_set():
-            if self.process is None: 
-                break
-                
-            try:
-                # Llegim una línia del canal d'output estàndard
-                line = self.process.stdout.readline()
-                
-                # SI NO HI HA LÍNIA: Comprovem si és que el servidor ha mort o és només un retard
-                if not line:
-                    if self.process.poll() is not None:
-                        # El procés ha finalitzat de veritat, sortim del bucle
-                        break
-                    else:
-                        # El procés continua viu però no hi ha text, descansem un mil·lisegon i tornem a provar
-                        time.sleep(0.01)
-                        continue
-                
-                # Si hi ha text, l'enviem directament a la pantalleta gràfica
-                if line: 
-                    self.lbl_status.after(0, lambda l=line: self.log_message(l))
-                    
-            except Exception as e_read:
-                print(f"Read output debug log: {e_read}")
-                break
-
-        # Fem exactament el mateix blindatge per al canal d'errors (stderr) si el principal es tanca
-        while not self.stop_reader.is_set():
-            if self.process is None: 
-                break
-            try:
-                line = self.process.stderr.readline()
-                if not line:
-                    if self.process.poll() is not None: 
-                        break
-                    else:
-                        time.sleep(0.01)
-                        continue
-                if line: 
-                    self.lbl_status.after(0, lambda l=line: self.log_message(f"ERROR: {l}"))
-            except: 
-                break
 
     def setup_test_tab(self):
         frame = ttk.Frame(self.tab_test, padding="20")
@@ -533,19 +468,13 @@ class MTUOCManagerApp:
             messagebox.showerror("File I/O Error", f"Unable to read files:\n{str(e)}")
 
     def save_server_yaml(self):
-        # 🌟 PLA DE SEGURETAT DE DOBLE VIA:
-        # 1. Mirem si tenim la variable de memòria desada de l'última càrrega.
         config_to_save = getattr(self, 'current_server_file', None)
-        
-        # 2. Si no hi és, provem de recuperar-la en viu de la selecció activa de la pestanya Control
         if not config_to_save:
             selected_config = self.get_selected_config()
             if selected_config:
                 config_to_save = os.path.normpath(os.path.join(self.base_dir, selected_config))
-                # La guardem a la instància perquè ja quedi fixada per a la pròxima vegada
                 self.current_server_file = config_to_save
 
-        # 3. Si cap de les dues vies funciona, llavors sí que ens hem de plantar
         if not config_to_save or not os.path.exists(config_to_save):
             messagebox.showwarning("Save Error", "No active Server configuration could be detected.\n\nPlease select and load a configuration from the Control tab list first.")
             return
@@ -565,26 +494,10 @@ class MTUOCManagerApp:
             messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
 
     def save_model_yaml(self):
-        # 🌟 CORREGIT: Mirem directament si tenim un model associat obert
         if not self.associated_model_yaml or not os.path.exists(self.associated_model_yaml): 
             messagebox.showwarning("Save Error", "No active Model configuration is currently loaded or found.")
             return
             
-        raw_text = self.txt_editor_model.get("1.0", tk.END)
-        try:
-            yaml.safe_load(raw_text)
-        except yaml.YAMLError as exc:
-            messagebox.showerror("YAML Syntax Error (Model File)", f"Invalid structure rules detected:\n\n{str(exc)}")
-            return
-        try:
-            with open(self.associated_model_yaml, "w", encoding="utf-8") as f:
-                f.write(raw_text)
-            messagebox.showinfo("Persistence Status", "Model parameters committed successfully.")
-        except Exception as e:
-            messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
-
-    def save_model_yaml(self):
-        if not self.associated_model_yaml or not os.path.exists(self.associated_model_yaml): return
         raw_text = self.txt_editor_model.get("1.0", tk.END)
         try:
             yaml.safe_load(raw_text)
@@ -734,12 +647,10 @@ class MTUOCManagerApp:
         self.txt_recipe_console.delete("1.0", tk.END)
         self.recipe_log(f"Initializing download from: {remote_yaml_url}\n\n")
         
-        # Llancem el procés en un fil independent perquè la GUI no es quedi congelada
         threading.Thread(target=self.execute_recipe_download, args=(remote_yaml_url,), daemon=True).start()
 
     def execute_recipe_download(self, url):
         try:
-            # Forcem l'entorn sense buffer a Linux per a la descàrrega
             env_unbuffered = os.environ.copy()
             env_unbuffered["PYTHONUNBUFFERED"] = "1"
 
@@ -751,28 +662,26 @@ class MTUOCManagerApp:
 
             self.log_message("Initializing downloader backend...\n")
             
-            # Recuperem Popen per capturar el text i mostrar-ho a la teva pestanya
             process_dl = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1, # Lectura síncrona línia a línia
+                bufsize=1,
                 cwd=self.base_dir,
                 env=env_unbuffered
             )
 
-            # Llegim el flux en viu de la descàrrega
             while True:
                 line = process_dl.stdout.readline()
                 if not line and process_dl.poll() is not None:
                     break
                 if line:
-                    # Linux de vegades necessita que el manager gràfic netegi la línia si té retorns de carro (\r)
                     clean_line = line.replace('\r', '\n')
                     self.root.after(0, lambda l=clean_line: self.recipe_log(l))
 
-            return_code = process_dl.poll()
+            process_dl.poll()
+            return_code = process_dl.returncode
             if return_code == 0:
                 self.root.after(0, lambda: messagebox.showinfo("Success", "The recipe model and configurations have been successfully downloaded."))
                 self.root.after(0, self.refresh_configs)
