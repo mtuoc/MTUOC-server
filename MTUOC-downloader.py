@@ -149,7 +149,7 @@ if __name__ == "__main__":
     )
 
     # Parse the command-line arguments
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     # Initialize the downloader with the parsed recipe argument and run it
     downloader = RecipeDownloader(args.recipe)

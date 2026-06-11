@@ -71,7 +71,7 @@ a_server = Analysis(
     hiddenimports=[
         'html', 'pyyaml', 'requests', 'flask', 'waitress', 'websocket-client',
         'sentencepiece', 'sacremoses', 'ftfy', 'protobuf', 'jieba', 'fugashi',
-        'torch', 'transformers', 'ctranslate2', 'nvidia-cublas-cu12', 'ollama', 
+        'torch', 'transformers', 'ctranslate2', 'nvidia-cublas-cu12', 'ollama', 'pydantic', 
         'accelerate', 'deepl', 'google.cloud.translate', 'huggingface_hub' # <-- Afegit per compatibilitat amb models de HF
     ],
     hookspath=[],

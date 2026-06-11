@@ -40,8 +40,7 @@ class HFModelEngine:
         temp_value = float(gen_config.get('temperature', 0.0))
         num_beams = int(gen_config.get('num_beams', 1))
         
-        # 3. Construir els arguments base en un diccionari net
-        # Afegim "clean_up_tokenization_spaces" aquí directament
+        # 3. Construir els arguments de la pipeline nets
         pipeline_kwargs = {
             "clean_up_tokenization_spaces": False
         }
@@ -72,28 +71,27 @@ class HFModelEngine:
         stops = [s.replace("\\n", "\n") for s in gen_config.get('stop_sequences', [])]
         if stops:
             generation_kwargs["stop_strings"] = stops
-            # El tokenizer és necessari si s'usen stop_strings amb GenerationConfig
-            pipeline_kwargs["tokenizer"] = self.tokenizer 
 
-        # --- AQUÍ ESTÀ LA SOLUCIÓ ALS WARNINGS ---
-        # 1. Instanciem un objecte GenerationConfig buit i net (així evitem max_length=20)
+        # --- CONSTRUCCIÓ DE L'OBJECTE GENERATION CONFIG ---
         gen_config_obj = GenerationConfig()
         
-        # 2. Hi bolquem tots els nostres paràmetres de generació
         for key, value in generation_kwargs.items():
             setattr(gen_config_obj, key, value)
         
-        # 3. Forcem que max_length sigui None per evitar que s'autocalculi o xoqui amb max_new_tokens
         gen_config_obj.max_length = None
-        # ----------------------------------------
+        # --------------------------------------------------
 
-        # 6. Execució de la pipeline passant el bloc de configuració separat
+        # 6. Execució de la pipeline
         try:
+            # Per a complaure tant a Linux com a Mac, passem el tokenizer 
+            # de manera fixa com un paràmetre explícit de la funció pipe, 
+            # evitant el diccionari dinàmic que feia la punyeta en macOS.
             res = self.pipe(
                 prompt, 
-                generation_config=gen_config_obj, # Enviem l'objecte oficial de configuració
+                generation_config=gen_config_obj, 
+                tokenizer=self.tokenizer, # <-- Fix i explícit per a tothom
                 return_full_text=False,
-                **pipeline_kwargs                  # Paràmetres exclusius de la pipeline (com els espais)
+                **pipeline_kwargs                  
             )
             return res[0]['generated_text'].strip()
         except Exception as e:

@@ -29,7 +29,8 @@ nvidia-cublas-cu12
 ollama
 deepl
 google-cloud-translate
+pydantic
 
 # ADVANCED ENGINE & PARSING (EOLE)
 #eole
-#pydantic
+
