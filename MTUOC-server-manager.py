@@ -55,6 +55,8 @@ class MTUOCManagerApp:
         self.current_ip = "127.0.0.1"
         self.associated_model_yaml = None
         self.current_aux_file = None  # Tracks the currently opened file in the auxiliary editor
+        self.current_server_file = None # Tracks the currently loaded main config file
+        self.last_selected_config = None  # Tracks and locks the configuration selection across tabs
 
         # Recipe variables
         self.all_recipes = []
@@ -95,6 +97,9 @@ class MTUOCManagerApp:
         # Initial loading routines
         self.refresh_configs()
         self.load_recipes_from_repo()
+        
+        # Intercepta el botó de tancar la finestra (la X) per fer una sortida neta
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     # --- CONTROL TAB CONFIGURATION ---
     def setup_control_tab(self):
@@ -133,6 +138,7 @@ class MTUOCManagerApp:
             font=("Arial", 10), 
             yscrollcommand=scrollbar.set, 
             selectmode=tk.SINGLE,
+            exportselection=tk.FALSE,  # Evita que es deseleccioni el fitxer en canviar de pestanya
             bg="#ffffff",
             fg="#000000",
             highlightbackground="#cccccc"
@@ -297,6 +303,13 @@ class MTUOCManagerApp:
         except Exception as e:
             messagebox.showerror("Termination Error", f"An anomaly occurred while shutting down the server:\n{e}")
 
+    def on_closing(self):
+        """Gestiona el tancament de l'aplicació de manera neta, 
+        assegurant que s'atura el servidor si està actiu."""
+        if self.process and self.process.poll() is None:
+            self.stop_server()
+        self.root.destroy()
+        
     def refresh_configs(self):
         self.config_files = []
         for file in os.listdir(self.base_dir):
@@ -319,7 +332,15 @@ class MTUOCManagerApp:
         if self.filtered_configs:
             for config in self.filtered_configs:
                 self.listbox_configs.insert(tk.END, config)
-            self.listbox_configs.selection_set(0)
+            
+            # Recupera de manera persistent l'últim fitxer seleccionat si encara és a la llista
+            if self.last_selected_config in self.filtered_configs:
+                idx = self.filtered_configs.index(self.last_selected_config)
+                self.listbox_configs.selection_set(idx)
+                self.listbox_configs.see(idx)
+            else:
+                self.listbox_configs.selection_set(0)
+                
             self.btn_start.config(state=tk.NORMAL)
         else:
             self.listbox_configs.insert(tk.END, "No matching configuration files found")
@@ -327,9 +348,11 @@ class MTUOCManagerApp:
 
     def get_selected_config(self):
         selection = self.listbox_configs.curselection()
-        if not selection: return None
+        if not selection: 
+            return self.last_selected_config
         selected_text = self.filtered_configs[selection[0]]
         if selected_text.startswith("No matching"): return None
+        self.last_selected_config = selected_text
         return selected_text
 
     def log_message(self, message):
@@ -370,31 +393,46 @@ class MTUOCManagerApp:
 
     def perform_translation(self, segment):
         translation = ""
+        custom_timeout = 60
+        selected_config = self.get_selected_config()
+        if selected_config:
+            try:
+                config_full_path = os.path.join(self.base_dir, selected_config)
+                with open(config_full_path, 'r', encoding='utf-8') as f:
+                    content = yaml.safe_load(f)
+                if "MTUOCServer" in content and "timeout" in content["MTUOCServer"]:
+                    custom_timeout = int(content["MTUOCServer"]["timeout"])
+            except Exception as e_timeout:
+                print(f"Could not read custom timeout, using default value: {e_timeout}")
+
         try:
             if self.current_type == "MTUOC":
                 url = f"http://{self.current_ip}:{self.current_port}/translate"
                 params = {"id": random.randint(0, 10000), "src": segment, "srcLang": "any", "tgtLang": "any"}
-                response = requests.post(url, json=params, timeout=10)
+                response = requests.post(url, json=params, timeout=custom_timeout)
                 translation = response.json().get("tgt", "Error: Missing target translation field.")
             elif self.current_type == "Moses":
                 proxy = xmlrpc.client.ServerProxy(f"http://{self.current_ip}:{self.current_port}/RPC2")
+                import socket
+                socket.setdefaulttimeout(custom_timeout)
                 result = proxy.translate({"text": segment})
                 translation = result.get('text', '')
             elif self.current_type == "OpenNMT":
                 url = f"http://{self.current_ip}:{self.current_port}/translator/translate"
-                response = requests.post(url, json=[{"src": segment}], timeout=10)
+                response = requests.post(url, json=[{"src": segment}], timeout=custom_timeout)
                 translation = response.json()[0][0].get("tgt", "")
             elif self.current_type == "NMTWizard":
                 url = f"http://{self.current_ip}:{self.current_port}/translate"
-                response = requests.post(url, json={"src": [{"text": segment}]}, timeout=10)
+                response = requests.post(url, json={"src": [{"text": segment}]}, timeout=custom_timeout)
                 translation = response.json()["tgt"][0][0].get("text", "")
             elif self.current_type == "ModernMT":
                 url = f"http://{self.current_ip}:{self.current_port}/translate"
-                response = requests.get(url, params={'q': segment}, timeout=10)
+                response = requests.get(url, params={'q': segment}, timeout=custom_timeout)
                 translation = response.json().get('data', {}).get("translation", "")
         except Exception as e:
             translation = f"Network Connection Error: {str(e)}"
         self.root.after(0, lambda t=translation: self.update_target_text(t))
+        
 
     def update_target_text(self, text):
         self.test_text_target.delete(1.0, tk.END)
@@ -403,7 +441,7 @@ class MTUOCManagerApp:
     def setup_editor_tab(self):
         main_editor_frame = ttk.Frame(self.tab_editor, padding="15")
         main_editor_frame.pack(fill=tk.BOTH, expand=True)
-        self.btn_load_yaml = ttk.Button(main_editor_frame, text="LOAD SELECTED SERVER CONFIGURATION & LINKED MODEL CONFIG", command=self.load_yaml_to_editor)
+        self.btn_load_yaml = ttk.Button(main_editor_frame, text="LOAD SERVER CONFIGURATION & LINKED MODEL CONFIG...", command=self.load_yaml_to_editor)
         self.btn_load_yaml.pack(fill=tk.X, pady=(0, 10))
         self.editor_notebook = ttk.Notebook(main_editor_frame)
         self.editor_notebook.pack(fill=tk.BOTH, expand=True)
@@ -415,7 +453,7 @@ class MTUOCManagerApp:
         self.lbl_editing_file_server.pack(anchor=tk.W, pady=(0, 5))
         self.txt_editor_server = scrolledtext.ScrolledText(frame_srv, wrap=tk.WORD, font=("Courier", 11), bg="#ffffff", fg="#000000")
         self.txt_editor_server.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
-        self.btn_save_server = ttk.Button(frame_srv, text="SAVE SERVER CONFIGURATION", command=self.save_server_yaml)
+        self.btn_save_server = ttk.Button(frame_srv, text="SAVE SERVER CONFIGURATION AS...", command=self.save_server_yaml)
         self.btn_save_server.pack(fill=tk.X)
         self.subtab_model = ttk.Frame(self.editor_notebook)
         self.editor_notebook.add(self.subtab_model, text=" 2. Model Configuration (Linked) ")
@@ -425,21 +463,30 @@ class MTUOCManagerApp:
         self.lbl_editing_file_model.pack(anchor=tk.W, pady=(0, 5))
         self.txt_editor_model = scrolledtext.ScrolledText(frame_mdl, wrap=tk.WORD, font=("Courier", 11), bg="#ffffff", fg="#000000")
         self.txt_editor_model.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
-        self.btn_save_model = ttk.Button(frame_mdl, text="SAVE MODEL CONFIGURATION", command=self.save_model_yaml, state=tk.DISABLED)
+        self.btn_save_model = ttk.Button(frame_mdl, text="SAVE MODEL CONFIGURATION AS...", command=self.save_model_yaml, state=tk.DISABLED)
         self.btn_save_model.pack(fill=tk.X)
 
     def load_yaml_to_editor(self):
         selected_config = self.get_selected_config()
-        if not selected_config:
-            messagebox.showwarning("Editor Warning", "No valid configuration schema selected from the Control tab list.")
-            return
-        config_full_path = os.path.join(self.base_dir, selected_config)
+        initial_file = selected_config if selected_config else ""
+        
+        file_types = [('YAML Configurations', '*.yaml *.yml'), ('All Files', '*.*')]
+        chosen_file = filedialog.askopenfilename(
+            initialdir=self.base_dir, 
+            initialfile=initial_file,
+            title="Open Server Configuration", 
+            filetypes=file_types
+        )
+        if not chosen_file: return
+
         try:
-            with open(config_full_path, "r", encoding="utf-8") as f:
+            with open(chosen_file, "r", encoding="utf-8") as f:
                 server_raw = f.read()
             self.txt_editor_server.delete("1.0", tk.END)
             self.txt_editor_server.insert(tk.END, server_raw)
-            self.lbl_editing_file_server.config(text=f"Server Configuration File: {config_full_path}", foreground="blue")
+            self.lbl_editing_file_server.config(text=f"Server Configuration File: {chosen_file}", foreground="blue")
+            
+            self.current_server_file = chosen_file
             self.associated_model_yaml = None
             self.txt_editor_model.delete("1.0", tk.END)
             self.lbl_editing_file_model.config(text="No nested model configuration detected.", foreground="gray")
@@ -450,7 +497,7 @@ class MTUOCManagerApp:
                     raw_path = parsed_srv["model_config"]
                     if raw_path.startswith("./") or raw_path.startswith(".\\"):
                         raw_path = raw_path[2:]
-                    self.associated_model_yaml = os.path.normpath(os.path.join(self.base_dir, raw_path))
+                    self.associated_model_yaml = os.path.normpath(os.path.join(os.path.dirname(chosen_file), raw_path))
             except Exception as e_yaml:
                 print(f"YAML Parsing Alert: {e_yaml}")
             if self.associated_model_yaml:
@@ -468,17 +515,9 @@ class MTUOCManagerApp:
             messagebox.showerror("File I/O Error", f"Unable to read files:\n{str(e)}")
 
     def save_server_yaml(self):
-        config_to_save = getattr(self, 'current_server_file', None)
-        if not config_to_save:
-            selected_config = self.get_selected_config()
-            if selected_config:
-                config_to_save = os.path.normpath(os.path.join(self.base_dir, selected_config))
-                self.current_server_file = config_to_save
-
-        if not config_to_save or not os.path.exists(config_to_save):
-            messagebox.showwarning("Save Error", "No active Server configuration could be detected.\n\nPlease select and load a configuration from the Control tab list first.")
-            return
-            
+        selected_config = self.get_selected_config()
+        initial_file = selected_config if selected_config else "config-server.yaml"
+        
         raw_text = self.txt_editor_server.get("1.0", tk.END)
         try:
             yaml.safe_load(raw_text)
@@ -486,17 +525,25 @@ class MTUOCManagerApp:
             messagebox.showerror("YAML Syntax Error (Server File)", f"Invalid structure rules detected:\n\n{str(exc)}")
             return
             
+        file_types = [('YAML Configurations', '*.yaml *.yml'), ('All Files', '*.*')]
+        target_save_path = filedialog.asksaveasfilename(
+            initialdir=self.base_dir, initialfile=initial_file,
+            title="Save Server Configuration As", filetypes=file_types, defaultextension=".yaml"
+        )
+        if not target_save_path: return
+
         try:
-            with open(config_to_save, "w", encoding="utf-8") as f:
+            with open(target_save_path, "w", encoding="utf-8") as f:
                 f.write(raw_text)
-            messagebox.showinfo("Persistence Status", f"Server parameters committed successfully to:\n{os.path.basename(config_to_save)}")
+            self.lbl_editing_file_server.config(text=f"Server Configuration File: {target_save_path}", foreground="blue")
+            self.current_server_file = target_save_path
+            messagebox.showinfo("Persistence Status", f"Server parameters committed successfully to:\n{os.path.basename(target_save_path)}")
+            self.refresh_configs()
         except Exception as e:
             messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
 
     def save_model_yaml(self):
-        if not self.associated_model_yaml or not os.path.exists(self.associated_model_yaml): 
-            messagebox.showwarning("Save Error", "No active Model configuration is currently loaded or found.")
-            return
+        initial_file = os.path.basename(self.associated_model_yaml) if self.associated_model_yaml else "config-model.yaml"
             
         raw_text = self.txt_editor_model.get("1.0", tk.END)
         try:
@@ -504,9 +551,19 @@ class MTUOCManagerApp:
         except yaml.YAMLError as exc:
             messagebox.showerror("YAML Syntax Error (Model File)", f"Invalid structure rules detected:\n\n{str(exc)}")
             return
+
+        file_types = [('YAML Configurations', '*.yaml *.yml'), ('All Files', '*.*')]
+        target_save_path = filedialog.asksaveasfilename(
+            initialdir=self.base_dir, initialfile=initial_file,
+            title="Save Model Configuration As", filetypes=file_types, defaultextension=".yaml"
+        )
+        if not target_save_path: return
+
         try:
-            with open(self.associated_model_yaml, "w", encoding="utf-8") as f:
+            with open(target_save_path, "w", encoding="utf-8") as f:
                 f.write(raw_text)
+            self.associated_model_yaml = target_save_path
+            self.lbl_editing_file_model.config(text=f"Model Configuration File: {target_save_path}", foreground="blue")
             messagebox.showinfo("Persistence Status", "Model parameters committed successfully.")
         except Exception as e:
             messagebox.showerror("Persistence Error", f"Failed to save:\n{e}")
@@ -522,14 +579,22 @@ class MTUOCManagerApp:
         self.txt_editor_aux.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
         aux_btn_frame = ttk.Frame(frame)
         aux_btn_frame.pack(fill=tk.X)
-        self.btn_open_aux = ttk.Button(aux_btn_frame, text="OPEN FILE", command=self.open_aux_file)
+        self.btn_open_aux = ttk.Button(aux_btn_frame, text="OPEN FILE...", command=self.open_aux_file)
         self.btn_open_aux.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
-        self.btn_save_as_aux = ttk.Button(aux_btn_frame, text="SAVE AS...", command=self.save_as_aux_file)
+        self.btn_save_as_aux = ttk.Button(aux_btn_frame, text="SAVE FILE AS...", command=self.save_as_aux_file)
         self.btn_save_as_aux.pack(side=tk.RIGHT, padx=5, expand=True, fill=tk.X)
 
     def open_aux_file(self):
+        selected_config = self.get_selected_config()
+        initial_file = selected_config if selected_config else ""
+
         file_types = [('YAML Configurations', '*.yaml *.yml'), ('All Files', '*.*')]
-        chosen_file = filedialog.askopenfilename(initialdir=self.base_dir, title="Open Custom/Secondary Configuration", filetypes=file_types)
+        chosen_file = filedialog.askopenfilename(
+            initialdir=self.base_dir, 
+            initialfile=initial_file,
+            title="Open Custom/Secondary Configuration", 
+            filetypes=file_types
+        )
         if not chosen_file: return
         try:
             with open(chosen_file, "r", encoding="utf-8") as f:
@@ -548,8 +613,16 @@ class MTUOCManagerApp:
         except yaml.YAMLError as exc:
             messagebox.showerror("YAML Syntax Violation", f"Structural anomalies detected. Aborting save sequence:\n\n{str(exc)}")
             return
+        
+        selected_config = self.get_selected_config()
+        if self.current_aux_file:
+            initial_file = os.path.basename(self.current_aux_file)
+        elif selected_config:
+            initial_file = selected_config
+        else:
+            initial_file = "custom-config.yaml"
+
         file_types = [('YAML Configurations', '*.yaml *.yml'), ('All Files', '*.*')]
-        initial_file = os.path.basename(self.current_aux_file) if self.current_aux_file else "custom-config.yaml"
         target_save_path = filedialog.asksaveasfilename(
             initialdir=self.base_dir, initialfile=initial_file,
             title="Save Auxiliary Document As", filetypes=file_types, defaultextension=".yaml"

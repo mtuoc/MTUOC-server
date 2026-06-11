@@ -1,5 +1,7 @@
 import sys
 import re
+from MTUOC_misc import printLOG
+
 
 def merge_translations(translations):
     merged_translation={}
@@ -123,6 +125,7 @@ def translate_string(segment, server_context):
                 "src_subwords": "", "tgt_subwords": "", 
                 "alignment": "None", "alternate_translations": []
             }
+            printLOG(2,"Retrieved from TM:",segment)
             return(translation_data)
             
     # 1. Pas del Preprocessor
@@ -138,6 +141,10 @@ def translate_string(segment, server_context):
         # 3. Cridem el motor de traducció resident (Marian)
         translation_data = translator.translate(segment_to_translate)
         translation_data["src"]=segment
+        printLOG(2,"Source:",translation_data["tgt"])
+        printLOG(2,"Translation:",translation_data["tgt"])
+        printLOG(2,"--------------------------------------","")
+        printLOG(3,"Translation data:",translation_data)
     except Exception as e:
         print(f"Error crític a translator_engine: {e}", sys.exc_info())
         translation_data = {

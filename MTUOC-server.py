@@ -1,6 +1,6 @@
 #    MTUOC-server v 2606
 #    Description: an MTUOC server using Sentence Piece as preprocessing step
-#    Copyright (C) 2025  Antoni Oliver
+#    Copyright (C) 2026  Antoni Oliver
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +34,7 @@ import importlib.util
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from MTUOC_misc import get_IP_info
-
+from MTUOC_misc import printLOG
 
 # --- FUNCIÓ AUXILIAR PER CARREGAR TOKENITZADORS DINÀMICAMENT ---
 # 2. Auxiliary function to dynamically load any MTUOC-compliant tokenizer script
@@ -138,7 +138,7 @@ if dopreprocess and preprocess_yaml and os.path.exists(preprocess_yaml):
                 llista_canvis.append(camps)
             preprocessor.set_changes_input(llista_canvis)
         except:
-            print("Error reading changes input file:",sys.exc_info())
+            printLOG(1,"Error reading changes input file:",sys.exc_info())
     if preprocessor.config.get("truecase"):
         if preprocessor.config.get("truecaser_type")=="MTUOC":
             from MTUOC_truecaser import Truecaser
@@ -196,7 +196,7 @@ if dopostprocess and postprocess_yaml and os.path.exists(postprocess_yaml):
                 llista_canvis.append(camps)
             postprocessor.set_changes_output(llista_canvis)
         except:
-            print("Error reading changes output file:",sys.exc_info())
+            printLOG(1,"Error reading changes output file:",sys.exc_info())
             
     if postprocessor.config.get("changes_translation"):
         try:
@@ -208,7 +208,7 @@ if dopostprocess and postprocess_yaml and os.path.exists(postprocess_yaml):
                 llista_canvis.append(camps)
             postprocessor.set_changes_translation(llista_canvis)
         except:
-            print("Error reading changes translation file:",sys.exc_info())
+            printLOG(1,"Error reading changes translation file:",sys.exc_info())
     
     wordaligner = None
     if restore_tags:
@@ -242,13 +242,19 @@ if dopostprocess and postprocess_yaml and os.path.exists(postprocess_yaml):
 #Server type
 MTUOCServer_type=configYAML["MTUOCServer"]["type"]
 MTUOCServer_port=configYAML["MTUOCServer"]["port"]
-verbosity_level=int(configYAML["MTUOCServer"]["verbosity_level"])
-log_file=configYAML["MTUOCServer"]["log_file"]
-if log_file=="None":
-    log_file=False
+verbosity_level = int(configYAML["MTUOCServer"]["verbosity_level"])
+log_file = configYAML["MTUOCServer"]["log_file"]
+
+if log_file == "None":
+    log_file_active = False
+    sortidalog = None
 else:
-    sortidalog=codecs.open(log_file,"a",encoding="utf-8")
-    log_file=True
+    sortidalog = codecs.open(log_file, "a", encoding="utf-8")
+    log_file_active = True
+
+# --- ENREGISTREM ELS VALORS DE LOG A MTUOC_misc (INJECCIÓ NETA) ---
+from MTUOC_misc import setup_logging
+setup_logging(verbosity_level, log_file_active, sortidalog)
     
 
 ###OPUSMT
@@ -260,7 +266,7 @@ if MTUOCServer_MTengine == "OpusMT":
     #TransformersTranslator = translator_engine
     Transformers_model_path = translator_engine.model_path
     
-    print("Translating with OpusMT models", Transformers_model_path)
+    printLOG(1,"Translating with OpusMT models", Transformers_model_path)
     
 elif MTUOCServer_MTengine == "NLLB":
     from NLLBTranslator import NLLBTranslator
@@ -271,7 +277,7 @@ elif MTUOCServer_MTengine == "NLLB":
     # Extraiem la ruta del model (o nom) directament de l'atribut de la classe
     NLLB_model_path = translator_engine.model_name
     
-    print("Translating with NLLB models", NLLB_model_path)
+    printLOG(1,"Translating with NLLB models", NLLB_model_path)
     
 elif MTUOCServer_MTengine == "HuggingFace":
     from HFTranslator import HFTranslator
@@ -280,7 +286,7 @@ elif MTUOCServer_MTengine == "HuggingFace":
     translator_engine = HFTranslator(config_path=model_config)
     HF_model_path = translator_engine.model_path
     
-    print("Translating with HuggingFace:", HF_model_path)
+    printLOG(1,"Translating with HuggingFace:", HF_model_path)
     
 elif MTUOCServer_MTengine == "ctranslate2":
     from ctranslate2Translator import ctranslate2Translator
@@ -291,7 +297,7 @@ elif MTUOCServer_MTengine == "ctranslate2":
     # Extraiem la ruta del model (o nom) directament de l'atribut de la classe
     ctranslate2Translator = translator_engine.model_name
     
-    print("Translating with ctranslate2 model", ctranslate2Translator)
+    printLOG(1,"Translating with ctranslate2 model", ctranslate2Translator)
 
 elif MTUOCServer_MTengine == "M2M100":
     from M2M100Translator import M2M100Translator
@@ -300,7 +306,7 @@ elif MTUOCServer_MTengine == "M2M100":
     translator_engine = M2M100Translator(config_path=model_config)
     M2M100_model_path = translator_engine.model_path
     
-    print("Translating with M2M100:", M2M100_model_path)
+    printLOG(1,"Translating with M2M100:", M2M100_model_path)
 
 elif MTUOCServer_MTengine == "Apertium":
     from ApertiumTranslator import ApertiumTranslator
@@ -308,7 +314,7 @@ elif MTUOCServer_MTengine == "Apertium":
     # Instanciem el motor de NLLB passant-li el fitxer de configuració
     translator_engine = ApertiumTranslator(config_path=model_config)
     
-    print("Translating with Apertium")
+    printLOG(1,"Translating with Apertium")
     
 elif MTUOCServer_MTengine == "Ollama":
     from OllamaTranslator import OllamaTranslator
@@ -317,7 +323,7 @@ elif MTUOCServer_MTengine == "Ollama":
     translator_engine = OllamaTranslator(config_path=model_config)
     Ollama_model_path = translator_engine.model_path
     
-    print("Translating with Ollama models:", Ollama_model_path)
+    printLOG(1,"Translating with Ollama models:", Ollama_model_path)
     
 elif MTUOCServer_MTengine == "GoogleT":
     from GoogleTranslateTranslator import GoogleTranslateTranslator
@@ -354,7 +360,7 @@ elif MTUOCServer_MTengine == "GoogleT":
     translator_engine.model_path = f"GoogleAPI ({google_cfg.get('project_id')})"
     Google_model_path = translator_engine.model_path
 
-    print("Translating with Google Translate API via project:", Google_model_path)
+    printLOG(1,"Translating with Google Translate API via project:", Google_model_path)
 
 elif MTUOCServer_MTengine == "DeepL":
     from DeepLTranslator import DeepLTranslator
@@ -385,7 +391,7 @@ elif MTUOCServer_MTengine == "DeepL":
     translator_engine.model_path = f"DeepL_API"
     DeepL_model_path = translator_engine.model_path
 
-    print("Translating with DeepL API:", DeepL_model_path)
+    printLOG(1,"Translating with DeepL API:", DeepL_model_path)
 
 elif MTUOCServer_MTengine == "Eole":
     from EoleTranslator import EoleTranslator
@@ -394,17 +400,17 @@ elif MTUOCServer_MTengine == "Eole":
     translator_engine = EoleTranslator(config_path=model_config)
     Eole_model_path = translator_engine.model_path
     
-    print("Translating with Eole:", Eole_model_path)
+    printLOG(1,"Translating with Eole:", Eole_model_path)
     
 elif MTUOCServer_MTengine == "Marian":
     from MarianTranslator import MarianTranslator
     # Instanciem directament a la nostra variable de control
     translator_engine = MarianTranslator(config_path=model_config)
     marian_model_path = translator_engine.model_path
-    print("Translating with Marian models", marian_model_path) 
+    printLOG(1,"Translating with Marian models", marian_model_path) 
 
 else:
-    import sys
+    
     print(f"ERROR: El motor '{MTUOCServer_MTengine}' no està reconegut al servidor.")
     sys.exit(1)
     
@@ -420,7 +426,7 @@ if useTranslationMemory:
     memo=configYAML["TranslationMemory"]["memo"] 
     minsim=float(configYAML["TranslationMemory"]["minsim"])
     translationMemory=MTUOC_TranslationMemory(memo)
-    print("Using translation memory:",memo)
+    printLOG(1,"Using translation memory:",memo)
 else:
     minsim=100
 
