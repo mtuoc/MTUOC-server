@@ -94,7 +94,8 @@ class TransformersTranslator:
     def translate(self, text, max_length=128):
         if self.model is None or self.tokenizer is None:
             raise ValueError("Model not loaded. Call set_model() or init with a valid config_path first.")
-
+        if len(self.multilingual)>0:    
+            text=self.multilingual+" "+text
         inputs = self.tokenizer(text, return_tensors="pt", max_length=max_length, truncation=True).to(self.device)
         src_subword_units = self.tokenizer.tokenize(text) 
         

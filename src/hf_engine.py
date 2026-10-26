@@ -1,102 +1,138 @@
 import torch
-from transformers import pipeline, GenerationConfig
+import traceback
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 class HFModelEngine:
-    def __init__(self):
-        self.pipe = None
+    def __init__(self, debug=False):
+        self.model = None
         self.tokenizer = None
+        self.device = None
+        self.debug = debug
+        
+        if self.debug:
+            print(f"[DEBUG ENGINE] HFModelEngine instance created. (Instance ID: {id(self)})")
 
     def load_model(self, model_name, device='cuda', trust_remote_code=True):
-        try:
-            # Determinem el mapa de dispositius: 'auto' utilitzarà la GPU si està disponible
-            dev_map = "auto" if torch.cuda.is_available() and device == 'cuda' else None
+        if self.debug:
+            print(f"[DEBUG ENGINE] Starting load_model() for: '{model_name}' on device: '{device}'")
             
-            self.pipe = pipeline(
-                "text-generation",
-                model=model_name,
-                device_map=dev_map,  # Canviat 'device=0' per 'device_map="auto"'
-                trust_remote_code=trust_remote_code,
-                torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32 # Canviat 'dtype' per 'torch_dtype'
+        try:
+            # 1. Device selection
+            if (device == 'mps' or device == 'cuda') and torch.backends.mps.is_available():
+                self.device = torch.device("mps")
+                dtype = torch.float16
+                device_map = None
+            elif device == 'cuda' and torch.cuda.is_available():
+                self.device = torch.device("cuda")
+                dtype = torch.bfloat16
+                device_map = "auto"
+            else:
+                self.device = torch.device("cpu")
+                dtype = torch.float32
+                device_map = None
+
+            if self.debug:
+                print(f"[DEBUG ENGINE] Assigned device: {self.device}, Dtype: {dtype}")
+
+            # 2. Load Tokenizer
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                model_name, 
+                trust_remote_code=trust_remote_code
             )
-            self.tokenizer = self.pipe.tokenizer
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
+
+            # 3. Load Model
+            load_kwargs = {
+                "dtype": dtype,
+                "trust_remote_code": trust_remote_code,
+                "low_cpu_mem_usage": True
+            }
+            if device_map:
+                load_kwargs["device_map"] = device_map
+
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+
+            if device_map is None:
+                self.model.to(self.device)
+
+            if self.debug:
+                print("[DEBUG ENGINE] Model loaded successfully! (self.model is valid)")
             return True
+
         except Exception as e:
-            print(f"Error loading model: {e}")
+            print(f"[ERROR ENGINE] Critical error loading model: {e}")
+            if self.debug:
+                traceback.print_exc()
+            self.model = None
+            self.tokenizer = None
             return False
 
     def generate(self, user_text, gen_config):
-        if not self.pipe: 
+        if self.debug:
+            print(f"[DEBUG ENGINE] Calling generate(). Instance ID: {id(self)}")
+        
+        if self.model is None or self.tokenizer is None:
             return "Error: Model not loaded"
 
-        # 1. Preparar el prompt amb el format de xat (ChatML)
-        messages = [{"role": "user", "content": user_text}]
-        prompt = self.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
-        # 2. Extraure valors de configuració per decidir l'estratègia
-        temp_value = float(gen_config.get('temperature', 0.0))
-        num_beams = int(gen_config.get('num_beams', 1))
-        
-        # 3. Construir els arguments de la pipeline nets
-        pipeline_kwargs = {
-            "clean_up_tokenization_spaces": False
-        }
-
-        # Creem el diccionari de paràmetres de generació pur
-        generation_kwargs = {
-            "max_new_tokens": gen_config.get('max_new_tokens', 128),
-            "repetition_penalty": float(gen_config.get('repetition_penalty', 1.0)),
-            "no_repeat_ngram_size": int(gen_config.get('no_repeat_ngram_size', 0)),
-            "pad_token_id": self.tokenizer.pad_token_id,
-            "eos_token_id": self.tokenizer.eos_token_id if gen_config.get('use_eos_token', True) else None,
-        }
-
-        # 4. Lògica d'estratègia
-        if num_beams > 1:
-            generation_kwargs["do_sample"] = False
-            generation_kwargs["num_beams"] = num_beams
-            generation_kwargs["early_stopping"] = True
-        elif temp_value > 0:
-            generation_kwargs["do_sample"] = True
-            generation_kwargs["temperature"] = temp_value
-            generation_kwargs["top_k"] = gen_config.get('top_k', 40)
-            generation_kwargs["top_p"] = gen_config.get('top_p', 0.9)
-        else:
-            generation_kwargs["do_sample"] = False
-
-        # 5. Afegir Stop Sequences si n'hi ha
-        stops = [s.replace("\\n", "\n") for s in gen_config.get('stop_sequences', [])]
-        if stops:
-            generation_kwargs["stop_strings"] = stops
-
-        # --- CONSTRUCCIÓ DE L'OBJECTE GENERATION CONFIG ---
-        gen_config_obj = GenerationConfig()
-        
-        for key, value in generation_kwargs.items():
-            setattr(gen_config_obj, key, value)
-        
-        gen_config_obj.max_length = None
-        # --------------------------------------------------
-
-        # 6. Execució de la pipeline
         try:
-            # Per a complaure tant a Linux com a Mac, passem el tokenizer 
-            # de manera fixa com un paràmetre explícit de la funció pipe, 
-            # evitant el diccionari dinàmic que feia la punyeta en macOS.
-            res = self.pipe(
-                prompt, 
-                generation_config=gen_config_obj, 
-                tokenizer=self.tokenizer, # <-- Fix i explícit per a tothom
-                return_full_text=False,
-                **pipeline_kwargs                  
+            messages = [{"role": "user", "content": user_text}]
+            prompt = self.tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
             )
-            return res[0]['generated_text'].strip()
+
+            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+            input_length = inputs.input_ids.shape[1]
+
+            num_beams = int(gen_config.get('num_beams', 1))
+            temp = float(gen_config.get('temperature', 0.0))
+            use_eos = gen_config.get('use_eos_token', True)
+
+            # 1. Paràmetres base
+            gen_args = {
+                "max_new_tokens": gen_config.get('max_new_tokens', 128),
+                "repetition_penalty": float(gen_config.get('repetition_penalty', 1.0)),
+                "no_repeat_ngram_size": int(gen_config.get('no_repeat_ngram_size', 0)), # AFEDIT
+                "pad_token_id": self.tokenizer.pad_token_id,
+                "eos_token_id": self.tokenizer.eos_token_id if use_eos else None,       # ACTUALITZAT
+            }
+
+            # 2. Estratègia de cerca / sampling
+            if num_beams > 1:
+                gen_args["num_beams"] = num_beams
+                gen_args["early_stopping"] = True
+                gen_args["do_sample"] = False
+            elif temp > 0.0:
+                gen_args["do_sample"] = True
+                gen_args["temperature"] = temp
+                gen_args["top_k"] = int(gen_config.get('top_k', 40))                    # AFEDIT
+                gen_args["top_p"] = float(gen_config.get('top_p', 0.9))
+            else:
+                gen_args["do_sample"] = False
+
+            # 3. Stop sequences (afegides de forma segura si existeixen al YAML)
+            stops = gen_config.get('stop_sequences', [])
+            if stops:
+                # Formatitzem les seqüències de parada (p. ex. convertint \n literals)
+                clean_stops = [s.replace("\\n", "\n") for s in stops]
+                gen_args["stop_strings"] = clean_stops
+                gen_args["tokenizer"] = self.tokenizer                                   # Requerit per a stop_strings
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    **gen_args
+                )
+
+            generated_tokens = outputs[0][input_length:]
+            translation = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
+            return translation.strip()
+
         except Exception as e:
-            print(f"Error durant la generació: {e}")
+            print(f"[ERROR ENGINE] Exception during generation: {e}")
+            if self.debug:
+                traceback.print_exc()
             return ""
 
     def post_process(self, text):
-        return text.replace("<|im_end|>", "").strip()
+        return text.strip()

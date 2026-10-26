@@ -401,7 +401,15 @@ elif MTUOCServer_MTengine == "Eole":
     Eole_model_path = translator_engine.model_path
     
     printLOG(1,"Translating with Eole:", Eole_model_path)
+
+elif MTUOCServer_MTengine == "VLLM":
+    from VllmTranslator import VllmTranslator
     
+    # Instanciem el motor resident d'Eole passant el teu fitxer config.yaml
+    translator_engine = VllmTranslator(config_path="configVllmTranslator.yaml")
+    
+    printLOG(1,"Translating with VLLM.", "")
+
 elif MTUOCServer_MTengine == "Marian":
     from MarianTranslator import MarianTranslator
     # Instanciem directament a la nostra variable de control

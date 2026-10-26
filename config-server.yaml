@@ -1,0 +1,27 @@
+MTengine: ctranslate2
+#download, Marian, Eole, OpusMT, NLLB, HuggingFace, Ollama, GoogleT, DeepL, ctranslate2
+system_name: Aina eng cat
+model_config: ./aina-translator-en-ca/config-ctranslate2-aina-translator-en-ca.yaml
+
+MTUOCServer:
+  port: 8000
+  type: MTUOC
+  #one of MTUOC, Moses, ModernMT, OpenNMT, NMTWizard
+  verbosity_level: 1
+  #specific configuration when acting as ONMT server
+  log_file: log.log
+  timeout: 45
+
+dopreprocess: True
+preprocess_config: ./aina-translator-en-ca/config-preprocess-aina-translator-en-ca.yaml
+dotokenization: False
+tokenization_config: None
+dopostprocess: True
+postprocess_config: ./aina-translator-en-ca/config-postprocess-aina-translator-en-ca.yaml
+
+TranslationMemory: 
+#path to memory or None
+  Path: None  
+  sl: en
+  tl: ca
+
